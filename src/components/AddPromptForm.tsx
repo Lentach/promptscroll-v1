@@ -169,7 +169,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
     primary_model: 'chatgpt',
     difficulty_level: 'beginner',
     author_name: '',
-    tags: '',
     technique_explanation: '',
     example_output: ''
   })
@@ -196,12 +195,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
     { value: 'beginner', label: 'Beginner', description: 'Easy to use and understand' },
     { value: 'intermediate', label: 'Intermediate', description: 'Requires some experience' },
     { value: 'advanced', label: 'Advanced', description: 'For experienced users' }
-  ]
-
-  const popularTags = [
-    'business', 'marketing', 'creative', 'coding', 'analysis', 'writing', 'email', 'social-media',
-    'seo', 'sales', 'customer-support', 'data', 'strategy', 'content', 'design', 'research',
-    'productivity', 'automation', 'education', 'finance', 'legal', 'healthcare', 'hr'
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -260,15 +253,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
 
       // ENHANCED TAG PROCESSING - Always add tags for better searchability
       const tagsToAdd = []
-      
-      // Add user-provided tags
-      if (formData.tags.trim()) {
-        const userTags = formData.tags
-          .split(',')
-          .map(tag => tag.trim().toLowerCase())
-          .filter(tag => tag.length > 0)
-        tagsToAdd.push(...userTags)
-      }
       
       // AUTO-ADD SMART TAGS based on content and category
       const selectedCategory = categories.find(c => c.id === formData.category_id)
@@ -336,7 +320,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         primary_model: 'chatgpt',
         difficulty_level: 'beginner',
         author_name: '',
-        tags: '',
         technique_explanation: '',
         example_output: ''
       })
@@ -353,14 +336,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const addPopularTag = (tag: string) => {
-    const currentTags = formData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
-    if (!currentTags.includes(tag)) {
-      const newTags = [...currentTags, tag].join(', ')
-      handleChange('tags', newTags)
-    }
   }
 
   if (!isOpen) return null
@@ -504,6 +479,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
                       ✓ Selected: {categories.find(c => c.id === formData.category_id)?.name}
                     </p>
                   )}
+                  <p className="text-xs text-gray-400 mb-3">Tagi zostaną wygenerowane automatycznie na podstawie treści prompta, kategorii i wybranego modelu AI.</p>
                 </div>
               </div>
 
@@ -539,41 +515,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
                     placeholder="Anonymous"
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors text-white placeholder-gray-400"
                   />
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-medium text-white mb-2 flex items-center">
-                  <Tag className="h-4 w-4 mr-2" />
-                  Tags (Optional - Smart tags will be added automatically)
-                </label>
-                <input
-                  type="text"
-                  value={formData.tags}
-                  onChange={(e) => handleChange('tags', e.target.value)}
-                  placeholder="e.g., business, email, professional (comma separated)"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors text-white placeholder-gray-400"
-                />
-                <p className="text-xs text-gray-400 mt-1 mb-3">
-                  We'll automatically add relevant tags based on your content, category, and AI model
-                </p>
-                
-                {/* Popular Tags */}
-                <div>
-                  <p className="text-xs text-gray-400 mb-2">Popular tags:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {popularTags.map(tag => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => addPopularTag(tag)}
-                        className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs hover:bg-blue-500/30 transition-colors"
-                      >
-                        #{tag}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </div>
 
