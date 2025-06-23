@@ -11,12 +11,10 @@ import { FilterPanel } from './components/FilterPanel'
 import { LoadingSpinner } from './components/LoadingSpinner'
 import { AddPromptForm } from './components/AddPromptForm'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { testDatabaseConnection, checkDatabaseSchema } from './lib/database-test'
 import type { FilterState, Prompt, SortOption } from './types'
 
 function App() {
   // UI State
-  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const [showAddPrompt, setShowAddPrompt] = useState(false)
   const [showAllCategories, setShowAllCategories] = useState(false)
   const [highlightedPromptId, setHighlightedPromptId] = useState<string | null>(null)
@@ -40,37 +38,6 @@ function App() {
   // Debounced search for better performance
   const debouncedSearch = useDebounce(filters.search, 300)
 
-  // Test database connection on app start
-  useEffect(() => {
-    async function initializeDatabase() {
-      console.log('🚀 Initializing PromptScroll...')
-      
-      const connectionOk = await testDatabaseConnection()
-      const schemaOk = await checkDatabaseSchema()
-      
-      if (connectionOk && schemaOk) {
-        setDbStatus('connected')
-        console.log('✅ PromptScroll ready!')
-      } else {
-        setDbStatus('error')
-        console.log('❌ Database setup required')
-      }
-    }
-    
-    initializeDatabase()
-  }, [])
-
-  // DODANY useEffect do przewijania strony po zmianie filtrów
-  useEffect(() => {
-    // Przewiń do góry głównego obszaru zawartości po zmianie kategorii lub wyszukiwania
-    if (mainContentRef.current && (filters.category || filters.search)) {
-      mainContentRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      })
-    }
-  }, [filters.category, filters.search])
-
   const { categories } = useCategories()
   
   // Main prompts with proper infinite scroll
@@ -79,13 +46,12 @@ function App() {
     loading, 
     error, 
     hasMore, 
-    loadMore, 
+    loadMore,
     refresh, 
-    totalCount 
+    setPrompts 
   } = usePrompts({
     ...filters,
-    search: debouncedSearch,
-    limit: 12
+    search: debouncedSearch
   })
 
   // DODANY useEffect do przewijania do podświetlonego prompta
@@ -208,48 +174,6 @@ function App() {
            filters.model !== undefined ||
            filters.verified !== undefined
   }, [filters])
-
-  // Show database error state
-  if (dbStatus === 'error') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 max-w-md text-center">
-          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="h-8 w-8 text-red-400" />
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Database Setup Required</h2>
-          <p className="text-red-400 mb-4">
-            Please apply the database migration in your Supabase dashboard to get started.
-          </p>
-          <div className="text-left bg-black/20 rounded-lg p-4 text-sm text-gray-300">
-            <p className="font-medium mb-2">Steps:</p>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Go to your Supabase dashboard</li>
-              <li>Open SQL Editor</li>
-              <li>Copy the migration from supabase/migrations/</li>
-              <li>Run the SQL</li>
-              <li>Refresh this page</li>
-            </ol>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Show loading state during database check
-  if (dbStatus === 'checking') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="h-8 w-8 text-white animate-pulse" />
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Initializing PromptScroll</h2>
-          <p className="text-gray-400">Connecting to database...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <ErrorBoundary>
@@ -523,7 +447,7 @@ function App() {
                 error={error}
                 hasMore={hasMore}
                 sortBy={filters.sortBy}
-                totalCount={totalCount}
+                totalCount={prompts.length}
                 highlightedPromptId={highlightedPromptId}
                 onPromptUpdate={handlePromptUpdate}
                 onTagClick={navigateToTag}
@@ -551,14 +475,14 @@ function App() {
                           🎉 You've reached the end!
                         </p>
                         <p className="text-gray-500 text-sm">
-                          You've seen all {totalCount} available prompts. Check back later for new content!
+                          You've seen all {prompts.length} available prompts. Check back later for new content!
                         </p>
                       </>
                     ) : filters.sortBy === 'popular' ? (
                       <>
                         <Flame className="h-8 w-8 text-orange-400 mx-auto mb-2" />
                         <p className="text-orange-300 font-medium mb-1">
-                          All {totalCount} Prompts by Popularity
+                          All {prompts.length} Prompts by Popularity
                         </p>
                         <p className="text-orange-400/80 text-sm">
                           You've seen all prompts sorted by popularity. Switch to "Newest" to see them chronologically.
@@ -568,7 +492,7 @@ function App() {
                       <>
                         <TrendingUp className="h-8 w-8 text-green-400 mx-auto mb-2" />
                         <p className="text-green-300 font-medium mb-1">
-                          All {totalCount} Trending Prompts
+                          All {prompts.length} Trending Prompts
                         </p>
                         <p className="text-green-400/80 text-sm">
                           You've seen all trending prompts from the last 14 days. Check "Newest" or "Popular" for more content.

@@ -29,14 +29,14 @@ PromptScroll to nie tylko agregator promptów, ale **centrum inteligencji prompt
 ## Key Challenges and Analysis
 
 ### Technical Challenges (Updated):
-1. **Database Design**: Supabase schema z RLS dla publicznego dostępu + kontekstowe oceny
+1. **Database Design**: Supabase schema z RLS dla publicznego dostępu
 2. **Performance**: Infinite scroll z efektywną paginacją
-3. **Quality System**: Kontekstowy system ocen (model AI + przypadek użycia)
+3. **Quality System**: Kontekstowy system ocen (like, disslike)
 4. **Mobile Responsiveness**: Mobile-first design approach
 5. **Content Moderation**: Automatyzacja + ludzka moderacja
 
 ### UX/UI Challenges (Enhanced):
-1. **Trust Building**: Wizualne wskaźniki jakości i weryfikacji
+1. **Trust Building**: Wizualne wskaźniki medalu(top10)
 2. **Educational Flow**: Intuicyjne uczenie się przez przykłady
 3. **Context Clarity**: Jasne wskazanie, dla jakiego modelu AI prompt jest skuteczny
 4. **Quality Signals**: Wyraźne oznaczenia "zweryfikowanych" promptów
@@ -46,74 +46,98 @@ PromptScroll to nie tylko agregator promptów, ale **centrum inteligencji prompt
 2. **Performance Optimization**: Fast loading times (<3s)
 3. **Content Safety**: Robust moderation system
 
-## High-level Task Breakdown (Updated Based on Report)
+# PromptScroll
 
-### Phase 1: Enhanced Database Foundation (Critical Path)
-- [ ] **Task 1.1**: Setup Supabase with enhanced schema for contextual ratings
-  - Success Criteria: Database with prompts, contextual_ratings, categories tables + RLS
-  - Estimated Time: 45 minutes
-  - **NEW**: Contextual ratings (model_ai, use_case, effectiveness_score)
+## 📝 Opis celu projektu
 
-- [ ] **Task 1.2**: Create enhanced TypeScript interfaces
-  - Success Criteria: Interfaces supporting contextual ratings and quality signals
-  - Estimated Time: 20 minutes
+**PromptScroll** to społecznościowa platforma webowa służąca do odkrywania, oceniania oraz udostępniania wysokiej jakości promptów (zapytań) do modeli AI – m.in. ChatGPT, Claude czy DALL-E. 
 
-### Phase 2: Quality-Focused Core Components
-- [ ] **Task 2.1**: Enhanced PromptCard with quality indicators
-  - Success Criteria: Card shows quality score, model compatibility, verification status
-  - Estimated Time: 75 minutes
-  - **NEW**: Quality badges, model-specific ratings, "verified" indicators
+### Główne funkcjonalności:
+- Prezentacja promptów pogrupowanych w kategorie
+- Filtrowanie i sortowanie (najpopularniejsze, najnowsze itd.)
+- Dodawanie własnych promptów przez użytkowników
+- System oceniania i kontekstowych recenzji
+- Dane przechowywane w bazie Supabase (PostgreSQL)
+- Interfejs w React + TypeScript + Tailwind CSS
 
-- [ ] **Task 2.2**: Contextual Rating System
-  - Success Criteria: Users can rate prompts for specific AI models and use cases
-  - Estimated Time: 60 minutes
-  - **NEW**: Multi-dimensional rating (effectiveness, clarity, specificity)
+---
 
-- [ ] **Task 2.3**: Enhanced AddPromptForm with quality validation
-  - Success Criteria: Form includes model specification, example outputs, quality guidelines
-  - Estimated Time: 50 minutes
-  - **NEW**: Model selection, example output field, quality checklist
+## 🚀 Instrukcje uruchomienia
 
-- [ ] **Task 2.4**: Smart TopPrompts with context filtering
-  - Success Criteria: Top prompts filtered by model, category, and quality score
-  - Estimated Time: 35 minutes
+### Wymagania
+- **Node.js** 18+
+- **npm** 8+
+- Konto **Supabase**
 
-### Phase 3: Trust & Educational Features
-- [ ] **Task 3.1**: Quality verification system
-  - Success Criteria: Visual indicators for verified/tested prompts
-  - Estimated Time: 30 minutes
-  - **NEW**: Verification badges, community validation
+### Instalacja
 
-- [ ] **Task 3.2**: Educational prompt analysis
-  - Success Criteria: Breakdown of why prompts work (optional for MVP)
-  - Estimated Time: 40 minutes
-  - **NEW**: "Why this works" sections, technique explanations
+```bash
+# Klonowanie repozytorium
+git clone [URL_REPO]
+cd promptscroll
 
-- [ ] **Task 3.3**: Advanced filtering by model and quality
-  - Success Criteria: Filter by AI model, quality score, verification status
-  - Estimated Time: 35 minutes
+# Instalacja zależności
+npm install
 
-### Phase 4: Polish & Content Safety
-- [ ] **Task 4.1**: Content moderation system
-  - Success Criteria: Basic flagging system and content guidelines
-  - Estimated Time: 30 minutes
+# Konfiguracja środowiska
+cp .env.example .env.local
+# Uzupełnij klucze Supabase w .env.local
 
-- [ ] **Task 4.2**: Performance optimization and error handling
-  - Success Criteria: <3s loading, proper error states, smooth animations
-  - Estimated Time: 45 minutes
+# Uruchomienie migracji bazy danych
+# Wykonaj kolejno pliki SQL z folderu /supabase/migrations/
+# (tworzą tabele i wstępne dane)
 
-- [ ] **Task 4.3**: Quality seed data with contextual ratings
-  - Success Criteria: 25+ high-quality prompts with proper ratings across models
-  - Estimated Time: 40 minutes
+# Uruchomienie aplikacji
+npm run dev
+```
 
-### Phase 5: Deployment and Demo Prep
-- [ ] **Task 5.1**: Vercel deployment with environment setup
-  - Success Criteria: Live app with proper Supabase configuration
-  - Estimated Time: 30 minutes
 
-- [ ] **Task 5.2**: Hackathon presentation preparation
-  - Success Criteria: Demo script highlighting unique value proposition
-  - Estimated Time: 45 minutes
+
+## ✅ Mocne strony projektu
+
+### Architektura i kod
+- **Czytelna struktura** - komponenty (`components/`) i hooki (`hooks/`) oddzielone od logiki bazodanowej (`lib/`)
+- **TypeScript** w całym kodzie poprawia bezpieczeństwo typów
+- **Tailwind CSS + Lucide Icons** zapewniają spójny, responsywny UI
+- **Supabase migrations** - wersjonowanie bazy i łatwe wdrożenie
+
+### User Experience
+- **Debounce wyszukiwania** - optymalizacja zapytań
+- **Infinite scroll** - płynne przewijanie długich list
+- **localStorage** - zapamiętywanie filtrów między sesjami
+- **ErrorBoundary** - obsługa błędów aplikacji
+- **Testy połączenia** - komunikaty przy problemach z bazą
+
+---
+
+## ⚠️ Słabe strony i ryzyka
+
+### Dokumentacja i konfiguracja
+- **README vs rzeczywistość** - opisuje Next.js, ale projekt używa Vite
+- **Hardkodowane klucze** - klucz anon Supabase w `lib/supabase.ts` (ryzyko bezpieczeństwa)
+- **Domyślne połączenie** - może kierować ruch do środowiska developera
+
+### Jakość kodu
+- **Brak testów** - brak testów jednostkowych/e2e mimo zaleceń
+- **Monolityczny komponent** - `App.tsx` ma 600+ linii, trudny w utrzymaniu
+- **Console.log w produkcji** - duża ilość logów, brak narzędzi telemetrycznych
+
+### DevOps i CI/CD
+- **Brak automatyzacji** - brak CI/CD (lint, test, build)
+- **Audyt bezpieczeństwa** - brak `npm audit` w procesie
+- **Dostępność** - deklarowane WCAG AA, ale brak testów dostępności
+
+---
+
+## 🔧 Rekomendowane ulepszenia
+
+1. **Refaktoring App.tsx** - podział na mniejsze widoki/komponenty
+2. **Konfiguracja zmiennych środowiskowych** - przeniesienie kluczy do .env
+3. **Dodanie testów** - jednostkowe i e2e
+4. **Implementacja CI/CD** - automatyzacja buildów i deployments
+5. **Aktualizacja dokumentacji** - zgodność z faktycznym stackiem
+6. **System logowania** - zamiana console.log na profesjonalne narzędzie
+7. **Testy dostępności** - weryfikacja zgodności z WCAG AA
 
 ## Project Status Board
 
@@ -122,14 +146,8 @@ PromptScroll to nie tylko agregator promptów, ale **centrum inteligencji prompt
 - [x] Enhanced technical architecture planned
 - [x] Quality-focused task breakdown completed
 - [x] Unique value proposition clarified
-- [ ] **NEXT**: Begin Phase 1 - Enhanced Database Foundation
 
-### 📋 Updated Task Estimates (Total: ~9.5 hours)
-- [ ] Phase 1: Enhanced Foundation (1.1h)
-- [ ] Phase 2: Quality-Focused Components (3.7h) 
-- [ ] Phase 3: Trust & Educational Features (1.75h)
-- [ ] Phase 4: Polish & Safety (1.9h)
-- [ ] Phase 5: Deployment & Demo (1.25h)
+
 
 ### ⚠️ Critical Success Factors (From Report)
 1. **Quality Over Quantity**: Focus on curated, verified prompts
@@ -139,11 +157,10 @@ PromptScroll to nie tylko agregator promptów, ale **centrum inteligencji prompt
 5. **Hackathon Impact**: Clear demo of unique value proposition
 
 ## Current Status / Progress Tracking
-**Current State**: Report analyzed, enhanced plan ready for execution
+**Current State**:
 **Active Role**: Planner → transitioning to Executor
 **Next Steps**: 
-1. User approval of enhanced plan
-2. Begin Task 1.1 - Enhanced Supabase schema with contextual ratings
+
 3. Focus on quality indicators and trust-building features
 
 **Risk Assessment**: 
@@ -154,18 +171,31 @@ PromptScroll to nie tylko agregator promptów, ale **centrum inteligencji prompt
 ## Executor's Feedback or Assistance Requests
 
 ### Key Insights from Report Implementation:
-1. **Contextual Rating System**: Users should rate prompts for specific AI models (ChatGPT, Claude, DALL-E) and use cases
-2. **Quality Indicators**: Visual badges for "verified", "tested", "community favorite" prompts
+
+2. **Quality Indicators**: Visual badges for "verified"
 3. **Educational Aspect**: Brief explanations of why certain prompts work well
 4. **Trust Building**: Clear moderation guidelines and community validation
 
-### Ready to Begin:
-- Enhanced database schema with contextual ratings
-- Quality-focused UI components
-- Trust-building features (verification badges)
-- Educational elements (prompt analysis)
+
 
 ---
-*Last Updated: Enhanced plan based on comprehensive PromptScroll report*
-*Estimated Total Development Time: 9.5 hours*
-*Focus: Quality, Trust, Education, Hackathon Success*
+
+### 🛠️ Supabase Integration Rebuild (2025-06-23)
+- [ ] Backup current `supabase/` migrations folder (tag) – assure we can reimport later
+- [ ] Delete hard-coded client file `src/lib/supabase.ts`
+- [ ] Generate fresh Supabase client file reading strictly from env and exporting typed helpers
+- [ ] Set up minimal database schema SQL (categories, prompts, prompt_tags) in new migration `supabase/migrations/20250623080000_baseline.sql`
+- [ ] Write seed script inside migration for base categories
+- [ ] Add RLS policies: public select, public insert prompts, public update stats
+- [ ] Add simplified RPC functions (increment likes, dislikes, uses) without session table to get MVP working
+- [ ] Update front-end hooks to call new RPC or direct updates via `.update()` if RPC removed
+- [ ] Introduce `supabase/schema.ts` with typed Table definitions for type-safety
+- [ ] Test: Add prompt, like/dislike, listing
+- [ ] Deploy to Supabase via CLI (`supabase db push`) – document command
+
+
+
+---
+
+# Lessons
+- Usuwać stare zależności i ślady po poprzedniej bazie przed nową integracją

@@ -198,6 +198,12 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
     { value: 'advanced', label: 'Advanced', description: 'For experienced users' }
   ]
 
+  const popularTags = [
+    'business', 'marketing', 'creative', 'coding', 'analysis', 'writing', 'email', 'social-media',
+    'seo', 'sales', 'customer-support', 'data', 'strategy', 'content', 'design', 'research',
+    'productivity', 'automation', 'education', 'finance', 'legal', 'healthcare', 'hr'
+  ]
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
@@ -347,6 +353,14 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const addPopularTag = (tag: string) => {
+    const currentTags = formData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+    if (!currentTags.includes(tag)) {
+      const newTags = [...currentTags, tag].join(', ')
+      handleChange('tags', newTags)
+    }
   }
 
   if (!isOpen) return null
@@ -541,6 +555,26 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
                   placeholder="e.g., business, email, professional (comma separated)"
                   className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors text-white placeholder-gray-400"
                 />
+                <p className="text-xs text-gray-400 mt-1 mb-3">
+                  We'll automatically add relevant tags based on your content, category, and AI model
+                </p>
+                
+                {/* Popular Tags */}
+                <div>
+                  <p className="text-xs text-gray-400 mb-2">Popular tags:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {popularTags.map(tag => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => addPopularTag(tag)}
+                        className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs hover:bg-blue-500/30 transition-colors"
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Technique Explanation */}
