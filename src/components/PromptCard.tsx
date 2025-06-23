@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useSessionVotes } from '../hooks/useSessionVotes'
 import { usePromptActions } from '../hooks/usePromptActions'
+import { useTopPrompts } from '../hooks/useTopPrompts'
 import type { Prompt } from '../types'
 
 interface PromptCardProps {
@@ -176,6 +177,7 @@ const getAIModelIcon = (model: string) => {
 export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }: PromptCardProps) {
   // Session-based voting system with anti-spam protection
   const { hasVoted, canVote, recordVote } = useSessionVotes()
+  const { topIds } = useTopPrompts()
   const { hasLiked, hasDisliked } = hasVoted(prompt.id)
   
   // Prompt actions with loading states
@@ -364,7 +366,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   }
 
   // Quality indicators with enhanced visuals
-  const shouldShowAward = isTopPrompt || usesCount >= 100
+  const shouldShowAward = topIds.has(prompt.id) || usesCount >= 100
   const difficultyColors = {
     beginner: 'text-green-400',
     intermediate: 'text-yellow-400',

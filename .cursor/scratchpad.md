@@ -1,52 +1,22 @@
-# Background and Motivation
-The app now correctly fetches and displays categories and prompts.  
-Next goals requested by the user:
-1.  "Smart tags" – automatically attach relevant tags to every new prompt based on its text (e.g. if the word *email* appears, add tag *email*).  
-2.  Category filter UX – clicking a category in the left panel should immediately show prompts from **that** category (currently nothing appears).  
-3.  More predefined categories + ability to select **multiple** categories when adding a prompt.
+## New task: Medal icon for TOP10 prompts
+- Popularity metric: total_likes + total_uses (descending)
+- Logic: fetch list of top 10 prompt IDs once (e.g. on app start / when likes/uses update) via Supabase RPC or query in usePrompts hook.
+- Store this set in React state (context or within usePrompts) and pass boolean isTop to PromptCard.
+- Remove previous isTopPrompt prop logic if obsolete.
+- PromptCard renders medal icon only when isTop === true.
+- Success criteria: exactly 10 prompts display medal, counts update after like/use changes, no extra DB reads per card.
 
----
-# Key Challenges and Analysis
-* **Smart tags**: basic logic already exists in `AddPromptForm.tsx` (`smartTags` detection array). We need to guarantee these tags are persisted (they already insert into `prompt_tags`). We may extend the keyword list + ensure deduplication.
-* **Category filtering bug**: `usePrompts` filters by `category_id`, but `FilterPanel` passes **category.name** (lower-cased). Either we change the filter to send `category_id` or adjust SQL query to join by name. Simpler and less breaking – pass the ID.
-* **Multiple categories per prompt**: present schema supports single `category_id`. We should create a join table `prompt_categories(prompt_id uuid, category_id uuid)` and adjust UI + queries.  
-  ↳ Requires small DB migration + update to `usePrompts` select (join and aggregate).
-* **More categories**: easy seed insert; no code impact once multi-cat ready.
+- [ ] Medal icon logic implemented
 
----
-# High-level Task Breakdown
-- [ ] **DB migration**
-  - [ ] Create table `prompt_categories (prompt_id uuid references prompts, category_id uuid references categories)` with primary key `(prompt_id, category_id)`.
-  - [ ] Move existing `category_id` data into this table, then (option A) keep `prompts.category_id` for default OR (option B) drop the column.  *Simplest now*: keep column for backward compatibility; multi-select will insert additional rows.
-  - [ ] RLS policies: SELECT + INSERT on `prompt_categories` for anon key.
-
-- [ ] **Category filter fix**
-  - [ ] Update `FilterPanel` to pass **category_id** (instead of name) to `filters.category`.
-  - [ ] Adjust UI active-state check accordingly.
-  - [ ] Ensure `usePrompts` expects an ID and query remains as is (`eq('category_id', category)`), so prompts appear.
-
-- [ ] **AddPromptForm multi-select**
-  - [ ] Replace single `<select>` with multi-select (checkbox list) capturing an array of IDs.
-  - [ ] On submit, keep first selected as `category_id` (for backward compat) and insert all selected IDs into `prompt_categories`.
-
-- [ ] **Smart tags enhancement**
-  - [ ] Move keyword list into util for reuse; extend set (email, social-media, marketing, coding, etc.).
-  - [ ] Ensure tags are lower-cased and trimmed; deduplicate before insert.
-
-- [ ] **Seed more categories** (optional after migration).
-
----
-# Project Status Board
-- [x] DB migration script prepared
-- [x] Front-end filter fixed
-- [x] Form multi-select implemented
-- [x] Smart tag util refactored
-- [x] Extra categories seeded
-
----
-# Executor's Feedback or Assistance Requests
-_(empty)_
-
----
-# Lessons
-- Always align the type of value passed through filter state with what the query expects (name vs id).
+### Medal Icon subtasks
+- [ ] Create `src/hooks/useTopPrompts.ts`:
+      - maintains state `topIds` and `refresh()`
+      - on mount fetch `select id from prompts order by total_uses desc, total_likes desc limit 10`
+- [ ] Provide context in `App.tsx` (TopPromptsProvider) so any card can access.
+- [ ] Update `PromptCard.tsx`:
+      - consume context, determine `isTop` boolean.
+      - render medal icon only when `isTop`.
+      - remove/ignore existing `isTopPrompt` prop.
+- [ ] In `usePromptActions` after successful like/use increment call `refreshTopIds`.
+- [ ] Ensure no extra DB call per card; only context fetches once + on refresh.
+- [ ] Unit test: after hitting like multiple times to move prompt into top10, icon appears.
