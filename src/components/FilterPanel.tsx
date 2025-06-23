@@ -53,16 +53,15 @@ export function FilterPanel({
     })
   }
 
-  // Helper function to check if a category is active
-  const isCategoryActive = (categoryName: string) => {
-    return filters.category.toLowerCase() === categoryName.toLowerCase()
+  // Active check based on category id now
+  const isCategoryActive = (categoryId: string) => {
+    return filters.category === categoryId
   }
 
-  // Helper function to handle category selection
-  const handleCategorySelect = (categoryName: string) => {
-    const isActive = isCategoryActive(categoryName)
+  const handleCategorySelect = (categoryId: string) => {
+    const isActive = isCategoryActive(categoryId)
     onFiltersChange({ 
-      category: isActive ? '' : categoryName.toLowerCase()
+      category: isActive ? '' : categoryId
     })
   }
 
@@ -155,12 +154,12 @@ export function FilterPanel({
             const IconComponent = category.icon && (LucideIcons as any)[category.icon] 
               ? (LucideIcons as any)[category.icon] 
               : LucideIcons.Sparkles
-            const isActive = isCategoryActive(category.name)
+            const isActive = isCategoryActive(category.id)
             
             return (
               <button
                 key={category.id}
-                onClick={() => handleCategorySelect(category.name)}
+                onClick={() => handleCategorySelect(category.id)}
                 className={`flex items-center space-x-3 p-3 rounded-lg font-medium transition-all ${
                   isActive
                     ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'

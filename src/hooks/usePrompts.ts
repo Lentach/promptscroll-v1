@@ -47,7 +47,7 @@ export function usePrompts(options?: UsePromptsOptions): UsePromptsReturn {
         .from('prompts')
         .select(`
           *,
-          categories (
+          categories!prompts_category_id_fkey (
             name,
             color,
             icon

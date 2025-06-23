@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useCategories } from '../hooks/useCategories'
+import { generateSmartTags } from '../utils/smartTags'
 
 interface AddPromptFormProps {
   isOpen: boolean
@@ -165,7 +166,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
     title: '',
     content: '',
     description: '',
-    category_id: '',
+    category_ids: [] as string[],
     primary_model: 'chatgpt',
     difficulty_level: 'beginner',
     author_name: '',
@@ -209,13 +210,13 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
       }
 
       // Validate category selection
-      if (!formData.category_id) {
-        throw new Error('Please select a category')
+      if (formData.category_ids.length === 0) {
+        throw new Error('Please select at least one category')
       }
 
       console.log('📝 Submitting prompt with data:', {
         title: formData.title,
-        category_id: formData.category_id,
+        category_ids: formData.category_ids,
         primary_model: formData.primary_model
       })
 
@@ -226,7 +227,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
           title: formData.title.trim(),
           content: formData.content.trim(),
           description: formData.description.trim() || null,
-          category_id: formData.category_id, // Make sure this is set
+          category_id: formData.category_ids[0],
           primary_model: formData.primary_model,
           difficulty_level: formData.difficulty_level,
           author_name: formData.author_name.trim() || 'Anonymous',
@@ -255,10 +256,10 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
       const tagsToAdd = []
       
       // AUTO-ADD SMART TAGS based on content and category
-      const selectedCategory = categories.find(c => c.id === formData.category_id)
-      if (selectedCategory) {
+      const primaryCategory = categories.find(c => c.id === formData.category_ids[0])
+      if (primaryCategory) {
         // Add category name as tag
-        tagsToAdd.push(selectedCategory.name.toLowerCase())
+        tagsToAdd.push(primaryCategory.name.toLowerCase())
         
         // Add AI model as tag
         tagsToAdd.push(formData.primary_model)
@@ -272,20 +273,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         const description = formData.description.toLowerCase()
         const allText = `${title} ${description} ${content}`
         
-        // Smart tag detection
-        const smartTags = []
-        if (allText.includes('email') || allText.includes('mail')) smartTags.push('email')
-        if (allText.includes('social') || allText.includes('instagram') || allText.includes('linkedin')) smartTags.push('social-media')
-        if (allText.includes('business') || allText.includes('professional')) smartTags.push('business')
-        if (allText.includes('marketing') || allText.includes('campaign')) smartTags.push('marketing')
-        if (allText.includes('code') || allText.includes('programming')) smartTags.push('coding')
-        if (allText.includes('creative') || allText.includes('story')) smartTags.push('creative')
-        if (allText.includes('analysis') || allText.includes('analyze')) smartTags.push('analysis')
-        if (allText.includes('strategy') || allText.includes('strategic')) smartTags.push('strategy')
-        if (allText.includes('content') || allText.includes('blog')) smartTags.push('content')
-        if (allText.includes('sales') || allText.includes('selling')) smartTags.push('sales')
-        
-        tagsToAdd.push(...smartTags)
+        tagsToAdd.push(...generateSmartTags(allText))
       }
       
       // Remove duplicates and empty tags
@@ -311,12 +299,18 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         }
       }
 
+      // Insert into prompt_categories join table
+      if (promptData && formData.category_ids.length > 0) {
+        const rows = formData.category_ids.map(cid => ({ prompt_id: promptData.id, category_id: cid }))
+        await supabase.from('prompt_categories').insert(rows)
+      }
+
       // Reset form
       setFormData({
         title: '',
         content: '',
         description: '',
-        category_id: '',
+        category_ids: [],
         primary_model: 'chatgpt',
         difficulty_level: 'beginner',
         author_name: '',
@@ -336,6 +330,10 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCategoriesChange = (values: string[]) => {
+    setFormData(prev => ({ ...prev, category_ids: values }))
   }
 
   if (!isOpen) return null
@@ -461,22 +459,33 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
                   <label className="block text-sm font-medium text-white mb-2">
                     Category <span className="text-red-400">*</span>
                   </label>
-                  <select
-                    value={formData.category_id}
-                    onChange={(e) => handleChange('category_id', e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors text-white"
-                    required
-                  >
-                    <option value="" className="bg-slate-800">Select a category *</option>
-                    {categories.map(category => (
-                      <option key={category.id} value={category.id} className="bg-slate-800">
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  {formData.category_id && (
+                  <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto p-1 bg-white/5 border border-white/10 rounded-lg">
+                    {categories.map(category => {
+                      const isActive = formData.category_ids.includes(category.id)
+                      return (
+                        <button
+                          type="button"
+                          key={category.id}
+                          onClick={() => handleCategoriesChange(
+                            isActive
+                              ? formData.category_ids.filter(id => id !== category.id)
+                              : [...formData.category_ids, category.id]
+                          )}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all border  ${
+                            isActive
+                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                              : 'bg-transparent text-gray-300 hover:bg-white/10 border-transparent'
+                          }`}
+                        >
+                          <span>{category.name}</span>
+                          {isActive && <span className="text-blue-300">✓</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {formData.category_ids.length > 0 && (
                     <p className="text-xs text-green-400 mt-1">
-                      ✓ Selected: {categories.find(c => c.id === formData.category_id)?.name}
+                      ✓ Selected: {formData.category_ids.length} categories
                     </p>
                   )}
                   <p className="text-xs text-gray-400 mb-3">Tagi zostaną wygenerowane automatycznie na podstawie treści prompta, kategorii i wybranego modelu AI.</p>
