@@ -21,6 +21,9 @@ export function usePrompts(options?: UsePromptsOptions): UsePromptsReturn {
     category = '', 
     search = '', 
     sortBy = 'newest', 
+    difficulty,
+    model,
+    verified,
     limit = 20 
   } = options || {}
 
@@ -34,7 +37,10 @@ export function usePrompts(options?: UsePromptsOptions): UsePromptsReturn {
     category,
     search: search.trim(),
     sortBy,
-  }), [category, search, sortBy])
+    difficulty,
+    model,
+    verified
+  }), [category, search, sortBy, difficulty, model, verified])
 
   const fetchPrompts = useCallback(async (isNewQuery: boolean) => {
     try {
@@ -71,6 +77,18 @@ export function usePrompts(options?: UsePromptsOptions): UsePromptsReturn {
 
       if (search) {
         query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
+      }
+
+      if (difficulty) {
+        query = query.eq('difficulty_level', difficulty)
+      }
+
+      if (model) {
+        query = query.eq('primary_model', model)
+      }
+
+      if (verified === true) {
+        query = query.eq('is_verified', true)
       }
 
       query = query.range(currentOffset, currentOffset + limit - 1)
