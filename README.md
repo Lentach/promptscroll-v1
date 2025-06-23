@@ -195,3 +195,31 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Built with ❤️ for the AI community**
 
 *PromptScroll - Where great prompts are discovered, shared, and perfected.*
+
+## AI Model Redirect Button
+
+A reusable **RedirectButton** component lets users open any prompt in their preferred AI playground with a single click. The component automatically:
+
+1. Copies the prompt to the clipboard.
+2. Opens the playground URL for the selected model in a new browser tab.
+
+### Adding / Updating AI models
+1. Edit `src/constants/aiModels.ts` and add or modify an entry in the `AI_MODELS` object.
+   ```ts
+   export const AI_MODELS = {
+     // ...existing
+     mistral: {
+       name: 'Mistral',
+       url: 'https://chat.mistral.ai/'
+     }
+   } as const
+   ```
+2. (Optional) If you need a custom icon or colour scheme, update the component(s) that render those visuals (e.g. `PromptCard.tsx`).
+3. Rebuild / restart dev server.
+
+### Using the component directly
+```tsx
+import { RedirectButton } from './components/RedirectButton'
+
+<RedirectButton model="gemini" promptContent={myPrompt} className="my-classes" />
+```

@@ -85,11 +85,25 @@ export function usePromptActions({ onUpdate }: UsePromptActionsOptions = {}) {
       return await copyPrompt(promptId, content, currentUses);
   }, [copyPrompt]);
 
+  const recordUse = useCallback(async (promptId: string, currentUses: number) => {
+    setLoading(promptId, 'use', true)
+    try {
+      const newUses = await updatePromptCount(promptId, 'total_uses', currentUses)
+      onUpdate?.(promptId, { total_uses: newUses })
+      return { uses: newUses }
+    } catch (error) {
+      return { uses: currentUses }
+    } finally {
+      setLoading(promptId, 'use', false)
+    }
+  }, [setLoading, onUpdate])
+
   return {
     likePrompt,
     dislikePrompt,
     copyPrompt,
     usePrompt,
+    recordUse,
     isLoading,
   };
 }

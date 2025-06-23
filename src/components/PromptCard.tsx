@@ -20,6 +20,7 @@ import { useSessionVotes } from '../hooks/useSessionVotes'
 import { usePromptActions } from '../hooks/usePromptActions'
 import { useTopPrompts } from '../hooks/useTopPrompts'
 import type { Prompt } from '../types'
+import { RedirectButton } from './RedirectButton'
 
 interface PromptCardProps {
   prompt: Prompt
@@ -181,7 +182,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const { hasLiked, hasDisliked } = hasVoted(prompt.id)
   
   // Prompt actions with loading states
-  const { likePrompt, dislikePrompt, copyPrompt, usePrompt, isLoading } = usePromptActions({
+  const { likePrompt, dislikePrompt, copyPrompt, recordUse, isLoading } = usePromptActions({
     onUpdate
   })
 
@@ -256,16 +257,16 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
     }
   }, [copyStatus, copyPrompt, prompt.id, prompt.content, usesCount])
 
-  // Enhanced use handler
-  const handleUse = useCallback(async () => {
+  // Redirect use handler – only increments usage (no clipboard copy)
+  const handleRedirectUse = useCallback(async () => {
     try {
       setError(null)
-      const { uses } = await usePrompt(prompt.id, prompt.content, usesCount)
+      const { uses } = await recordUse(prompt.id, usesCount)
       setUsesCount(uses)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to use prompt')
+      setError(err instanceof Error ? err.message : 'Failed to record prompt use')
     }
-  }, [usePrompt, prompt.id, prompt.content, usesCount])
+  }, [recordUse, prompt.id, usesCount])
 
   // Content display logic
   const truncatedContent = prompt.content.length > 300 
@@ -631,21 +632,22 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
             {getCopyButtonIcon()}
           </button>
           
-          {/* Enhanced Use Button with SPECIAL GROK STYLING - POPRAWIONY ROZMIAR */}
-          <button
-            onClick={handleUse}
-            className={getUseButtonStyle()}
-            title={`Opens ${modelConfig.name} and copies prompt to clipboard`}
+          {/* Reusable RedirectButton for "Try in <Model>" */}
+          <RedirectButton
+            model={prompt.primary_model}
+            promptContent={prompt.content}
+            onUseComplete={handleRedirectUse}
+            className={`${getUseButtonStyle()} relative overflow-hidden group/use`}
           >
-            {/* Animated background - tylko dla nie-Grok modeli */}
+            {/* Animated background - only for non-Grok models */}
             {prompt.primary_model !== 'grok' && (
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover/use:translate-x-full transition-transform duration-700" />
             )}
-            
+
             <ExternalLink className="h-4 w-4 flex-shrink-0 relative z-10" />
             <span className="hidden xs:inline sm:inline truncate relative z-10">{getUseButtonText()}</span>
             <span className="xs:hidden sm:hidden relative z-10">Use</span>
-          </button>
+          </RedirectButton>
         </div>
       </div>
     </div>
