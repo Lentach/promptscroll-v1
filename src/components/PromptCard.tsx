@@ -182,9 +182,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   
   // Prompt actions with loading states
   const { likePrompt, dislikePrompt, copyPrompt, usePrompt, isLoading } = usePromptActions({
-    onUpdate,
-    canVote,
-    recordVote
+    onUpdate
   })
 
   // Local state with enhanced animations
@@ -216,13 +214,12 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
     
     try {
       setError(null)
-      const { likes, dislikes } = await likePrompt(prompt.id, likesCount, dislikesCount)
+      const { likes } = await likePrompt(prompt.id, likesCount)
       setLikesCount(likes)
-      setDislikesCount(dislikes)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to like prompt')
     }
-  }, [hasLiked, hasDisliked, isLoading, likePrompt, prompt.id, likesCount, dislikesCount])
+  }, [hasLiked, hasDisliked, isLoading, likePrompt, prompt.id, likesCount])
 
   // ENHANCED DISLIKE HANDLER with smooth animations
   const handleDislike = useCallback(async () => {
@@ -232,13 +229,12 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
     
     try {
       setError(null)
-      const { likes, dislikes } = await dislikePrompt(prompt.id, likesCount, dislikesCount)
-      setLikesCount(likes)
+      const { dislikes } = await dislikePrompt(prompt.id, dislikesCount)
       setDislikesCount(dislikes)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to dislike prompt')
     }
-  }, [hasLiked, hasDisliked, isLoading, dislikePrompt, prompt.id, likesCount, dislikesCount])
+  }, [hasLiked, hasDisliked, isLoading, dislikePrompt, prompt.id, dislikesCount])
 
   // Enhanced copy handler with premium feedback
   const handleCopy = useCallback(async () => {
@@ -264,12 +260,12 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const handleUse = useCallback(async () => {
     try {
       setError(null)
-      const { uses } = await usePrompt(prompt.id, prompt.content, prompt.primary_model, usesCount)
+      const { uses } = await usePrompt(prompt.id, prompt.content, usesCount)
       setUsesCount(uses)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to use prompt')
     }
-  }, [usePrompt, prompt.id, prompt.content, prompt.primary_model, usesCount])
+  }, [usePrompt, prompt.id, prompt.content, usesCount])
 
   // Content display logic
   const truncatedContent = prompt.content.length > 300 
