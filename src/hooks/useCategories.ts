@@ -1,45 +1,20 @@
-import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
-import type { Category } from '../types'
+import { supabase } from '../lib/supabase';
+import type { Category } from '../types';
+import { useSupabaseQuery } from './useSupabaseQuery';
 
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, loading, error, refresh } = useSupabaseQuery<Category[]>(
+    async () => {
+      const { data, error } = await supabase.from('categories').select('*').order('name');
+      return { data, error };
+    },
+    [],
+  );
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const { data, error: fetchError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name')
-
-      if (fetchError) {
-        throw fetchError
-      }
-
-      setCategories(data || [])
-      console.log('Fetched categories:', data)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch categories'
-      setError(errorMessage)
-      console.error('Error fetching categories:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
-
-  return { 
-    categories, 
-    loading, 
+  return {
+    categories: data ?? [],
+    loading,
     error,
-    refresh: fetchCategories 
-  }
+    refresh,
+  };
 }

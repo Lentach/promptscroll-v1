@@ -1,13 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       screens: {
-        'xs': '475px', // Extra small devices like Galaxy S24
+        xs: '475px', // Extra small devices like Galaxy S24
       },
       colors: {
         // Enhanced color system for premium UI
@@ -99,7 +96,7 @@ export default {
           800: '#1e293b',
           900: '#0f172a',
           950: '#020617',
-        }
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -109,9 +106,9 @@ export default {
         'fade-in-up': 'fadeInUp 0.6s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-slow': 'pulse 3s infinite',
-        'glow': 'glow 2s ease-in-out infinite',
-        'float': 'float 3s ease-in-out infinite',
-        'shimmer': 'shimmer 2s infinite',
+        glow: 'glow 2s ease-in-out infinite',
+        float: 'float 3s ease-in-out infinite',
+        shimmer: 'shimmer 2s infinite',
         'bounce-slow': 'bounce 2s infinite',
         'spin-slow': 'spin 3s linear infinite',
       },
@@ -146,7 +143,7 @@ export default {
       },
       boxShadow: {
         'glow-sm': '0 0 10px rgba(59, 130, 246, 0.3)',
-        'glow': '0 0 20px rgba(59, 130, 246, 0.4)',
+        glow: '0 0 20px rgba(59, 130, 246, 0.4)',
         'glow-lg': '0 0 30px rgba(59, 130, 246, 0.5)',
         'glow-purple': '0 0 20px rgba(139, 92, 246, 0.4)',
         'glow-green': '0 0 20px rgba(16, 185, 129, 0.4)',
@@ -160,22 +157,22 @@ export default {
         'gradient-premium': 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%)',
       },
       spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-        '128': '32rem',
+        18: '4.5rem',
+        88: '22rem',
+        128: '32rem',
       },
       borderRadius: {
         '4xl': '2rem',
         '5xl': '2.5rem',
       },
       zIndex: {
-        '60': '60',
-        '70': '70',
-        '80': '80',
-        '90': '90',
-        '100': '100',
+        60: '60',
+        70: '70',
+        80: '80',
+        90: '90',
+        100: '100',
       },
     },
   },
   plugins: [],
-}
+};

@@ -1,44 +1,42 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import React, { createContext, useContext } from 'react';
+import { supabase } from '../lib/supabase';
+import { useSupabaseQuery } from './useSupabaseQuery';
 
 interface TopPromptsContextValue {
-  topIds: Set<string>
-  refreshTopIds: () => void
+  topIds: Set<string>;
+  refreshTopIds: () => void;
 }
 
-const TopPromptsContext = createContext<TopPromptsContextValue | undefined>(undefined)
+const TopPromptsContext = createContext<TopPromptsContextValue | undefined>(undefined);
 
 export const TopPromptsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [topIds, setTopIds] = useState<Set<string>>(new Set())
+  const { data, refreshTop } = ((): { data: any[]; refreshTop: () => void } => {
+    const { data, refresh } = useSupabaseQuery<any[]>(
+      async () => {
+        const { data, error } = await supabase
+          .from('prompts')
+          .select('id, total_likes, total_uses')
+          .order('total_uses', { ascending: false })
+          .order('total_likes', { ascending: false })
+          .limit(10);
+        return { data, error };
+      },
+      [],
+    );
+    return { data: data ?? [], refreshTop: refresh };
+  })();
 
-  const fetchTop = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('prompts')
-      .select('id, total_likes, total_uses')
-      .order('total_uses', { ascending: false })
-      .order('total_likes', { ascending: false })
-      .limit(10)
-
-    if (error) {
-      console.error('Failed to fetch top prompts', error)
-      return
-    }
-    setTopIds(new Set((data || []).map(d => d.id as string)))
-  }, [])
-
-  useEffect(() => {
-    fetchTop()
-  }, [fetchTop])
+  const topIds = React.useMemo(() => new Set((data || []).map((d) => d.id as string)), [data]);
 
   return (
-    <TopPromptsContext.Provider value={{ topIds, refreshTopIds: fetchTop }}>
+    <TopPromptsContext.Provider value={{ topIds, refreshTopIds: refreshTop }}>
       {children}
     </TopPromptsContext.Provider>
-  )
-}
+  );
+};
 
 export function useTopPrompts() {
-  const ctx = useContext(TopPromptsContext)
-  if (!ctx) throw new Error('useTopPrompts must be used within TopPromptsProvider')
-  return ctx
-} 
+  const ctx = useContext(TopPromptsContext);
+  if (!ctx) throw new Error('useTopPrompts must be used within TopPromptsProvider');
+  return ctx;
+}

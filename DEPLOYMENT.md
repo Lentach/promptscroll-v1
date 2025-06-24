@@ -5,6 +5,7 @@ This guide covers deploying PromptScroll to production with Vercel and Supabase.
 ## 📋 Pre-Deployment Checklist
 
 ### ✅ Code Preparation
+
 - [ ] All features implemented and tested
 - [ ] TypeScript compilation successful (`npm run type-check`)
 - [ ] ESLint checks passing (`npm run lint`)
@@ -12,6 +13,7 @@ This guide covers deploying PromptScroll to production with Vercel and Supabase.
 - [ ] Environment variables configured
 
 ### ✅ Database Preparation
+
 - [ ] Production Supabase project created
 - [ ] All migrations applied in correct order
 - [ ] Row Level Security (RLS) policies configured
@@ -19,6 +21,7 @@ This guide covers deploying PromptScroll to production with Vercel and Supabase.
 - [ ] Database performance optimized
 
 ### ✅ Performance Optimization
+
 - [ ] Images optimized and properly configured
 - [ ] Bundle size analyzed and optimized
 - [ ] Loading performance <3 seconds
@@ -44,7 +47,7 @@ Run migrations in this exact order:
 -- 1. First migration: Core schema
 -- Copy content from: supabase/migrations/20250621032923_flat_unit.sql
 
--- 2. Second migration: Seed categories and sample data  
+-- 2. Second migration: Seed categories and sample data
 -- Copy content from: supabase/migrations/20250621032951_round_surf.sql
 
 -- 3. Third migration: Quality seed data
@@ -57,19 +60,20 @@ Verify RLS policies are active:
 
 ```sql
 -- Check RLS is enabled
-SELECT schemaname, tablename, rowsecurity 
-FROM pg_tables 
+SELECT schemaname, tablename, rowsecurity
+FROM pg_tables
 WHERE schemaname = 'public';
 
 -- Verify policies exist
-SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
-FROM pg_policies 
+SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual
+FROM pg_policies
 WHERE schemaname = 'public';
 ```
 
 ### 4. Get Database Credentials
 
 From your Supabase project dashboard:
+
 - **Project URL**: `https://[project-id].supabase.co`
 - **Anon Key**: Found in Settings > API
 - **Service Role Key**: Found in Settings > API (keep secure!)
@@ -96,7 +100,7 @@ Add these environment variables in Vercel:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 
-# Required - Application Configuration  
+# Required - Application Configuration
 NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
 NEXT_PUBLIC_APP_NAME=PromptScroll
 
@@ -135,6 +139,7 @@ NODE_ENV=production
 ### 2. Performance Monitoring
 
 Set up monitoring for:
+
 - **Core Web Vitals**: Monitor in Vercel Analytics
 - **Error Tracking**: Configure error reporting
 - **Database Performance**: Monitor in Supabase dashboard
@@ -143,6 +148,7 @@ Set up monitoring for:
 ### 3. Security Configuration
 
 #### Supabase Security
+
 ```sql
 -- Verify RLS policies are restrictive enough
 -- Check for any overly permissive policies
@@ -152,7 +158,9 @@ SELECT * FROM pg_policies WHERE policyname LIKE '%public%';
 ```
 
 #### Vercel Security Headers
+
 Already configured in `next.config.js`:
+
 - X-Frame-Options: DENY
 - X-Content-Type-Options: nosniff
 - Referrer-Policy: origin-when-cross-origin
@@ -164,13 +172,13 @@ Already configured in `next.config.js`:
 
 ```sql
 -- Add indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_prompts_quality_created 
+CREATE INDEX IF NOT EXISTS idx_prompts_quality_created
 ON prompts(quality_score DESC, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_prompts_category_quality 
+CREATE INDEX IF NOT EXISTS idx_prompts_category_quality
 ON prompts(category_id, quality_score DESC);
 
-CREATE INDEX IF NOT EXISTS idx_contextual_ratings_prompt_model 
+CREATE INDEX IF NOT EXISTS idx_contextual_ratings_prompt_model
 ON contextual_ratings(prompt_id, model_used);
 ```
 
@@ -194,6 +202,7 @@ npx bundle-analyzer .next/static/chunks/*.js
 ## 🔍 Testing Production Deployment
 
 ### 1. Functional Testing
+
 - [ ] All pages load correctly
 - [ ] Database connections work
 - [ ] User interactions function
@@ -201,12 +210,14 @@ npx bundle-analyzer .next/static/chunks/*.js
 - [ ] Mobile responsiveness
 
 ### 2. Performance Testing
+
 - [ ] Lighthouse score >90
 - [ ] Core Web Vitals pass
 - [ ] Loading time <3 seconds
 - [ ] Database queries optimized
 
 ### 3. Security Testing
+
 - [ ] RLS policies enforced
 - [ ] No sensitive data exposed
 - [ ] HTTPS enforced
@@ -217,6 +228,7 @@ npx bundle-analyzer .next/static/chunks/*.js
 ### Common Issues
 
 #### Build Failures
+
 ```bash
 # Check TypeScript errors
 npm run type-check
@@ -229,21 +241,20 @@ echo $NEXT_PUBLIC_SUPABASE_URL
 ```
 
 #### Database Connection Issues
+
 ```javascript
 // Test Supabase connection
-import { supabase } from './lib/supabase'
+import { supabase } from './lib/supabase';
 
 const testConnection = async () => {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('count')
-    .limit(1)
-  
-  console.log('Connection test:', { data, error })
-}
+  const { data, error } = await supabase.from('categories').select('count').limit(1);
+
+  console.log('Connection test:', { data, error });
+};
 ```
 
 #### Performance Issues
+
 - Check database query performance in Supabase dashboard
 - Analyze bundle size with Vercel analytics
 - Monitor Core Web Vitals in production
@@ -257,16 +268,19 @@ const testConnection = async () => {
 ## 📈 Monitoring and Maintenance
 
 ### 1. Regular Monitoring
+
 - **Weekly**: Check performance metrics and error rates
 - **Monthly**: Review database performance and optimize queries
 - **Quarterly**: Update dependencies and security patches
 
 ### 2. Backup Strategy
+
 - **Database**: Supabase provides automatic backups
 - **Code**: Repository is backed up on GitHub
 - **Environment**: Document all configuration
 
 ### 3. Scaling Considerations
+
 - **Database**: Monitor connection limits and query performance
 - **Vercel**: Upgrade plan if needed for higher traffic
 - **CDN**: Consider additional CDN for global performance
@@ -278,6 +292,7 @@ const testConnection = async () => {
 Your PromptScroll application is now live and ready for users. Monitor the deployment and gather user feedback for continuous improvement.
 
 **Next Steps:**
+
 1. Share with initial users for feedback
 2. Monitor performance and fix any issues
 3. Plan feature updates and improvements

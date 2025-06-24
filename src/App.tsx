@@ -1,193 +1,240 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { Sparkles, Plus, TrendingUp, Clock, Flame, ExternalLink, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown, Filter, X, Settings } from 'lucide-react'
-import { usePrompts } from './hooks/usePrompts'
-import { useCategories } from './hooks/useCategories'
-import { useInfiniteScroll } from './hooks/useInfiniteScroll'
-import { useDebounce } from './hooks/useDebounce'
-import { useLocalStorage } from './hooks/useLocalStorage'
-import { PromptGrid } from './components/PromptGrid'
-import { SearchBar } from './components/SearchBar'
-import { FilterPanel } from './components/FilterPanel'
-import { LoadingSpinner } from './components/LoadingSpinner'
-import { AddPromptForm } from './components/AddPromptForm'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import type { FilterState, Prompt, SortOption } from './types'
-import { TopPromptsProvider } from './hooks/useTopPrompts'
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import {
+  Sparkles,
+  Plus,
+  TrendingUp,
+  Clock,
+  Flame,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  ThumbsUp,
+  ThumbsDown,
+  Filter,
+  X,
+  Settings,
+} from 'lucide-react';
+import { usePrompts } from '@/features/prompts/hooks/usePrompts';
+import { useCategories } from './hooks/useCategories';
+import { useInfiniteScroll } from './hooks/useInfiniteScroll';
+import { useDebounce } from './hooks/useDebounce';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { PromptGrid } from '@/features/prompts/components';
+import { SearchBar } from './components/SearchBar';
+import { FilterPanel } from './components/FilterPanel';
+import { LoadingSpinner } from './components/LoadingSpinner';
+import { AddPromptForm } from './components/AddPromptForm';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import type { FilterState, Prompt, SortOption } from './types';
+import { TopPromptsProvider } from '@/features/prompts/hooks/useTopPrompts';
 
 function App() {
   // UI State
-  const [showAddPrompt, setShowAddPrompt] = useState(false)
-  const [showAllCategories, setShowAllCategories] = useState(false)
-  const [highlightedPromptId, setHighlightedPromptId] = useState<string | null>(null)
-  
+  const [showAddPrompt, setShowAddPrompt] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [highlightedPromptId, setHighlightedPromptId] = useState<string | null>(null);
+
   // Mobile filters state
-  const [showMobileFilters, setShowMobileFilters] = useState(false)
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // DODANA referencja do głównego obszaru zawartości
-  const mainContentRef = useRef<HTMLDivElement>(null)
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   // ZMIENIONY Default filter state - POPULAR JAKO DOMYŚLNE
   const defaultFilters: FilterState = {
     category: '',
     search: '',
-    sortBy: 'popular' // ZMIENIONE Z 'newest' NA 'popular'
-  }
+    sortBy: 'popular', // ZMIENIONE Z 'newest' NA 'popular'
+  };
 
   // Filter State with localStorage persistence
-  const [filters, setFilters] = useLocalStorage<FilterState>('promptscroll-filters', defaultFilters)
+  const [filters, setFilters] = useLocalStorage<FilterState>(
+    'promptscroll-filters',
+    defaultFilters,
+  );
 
   // Debounced search for better performance
-  const debouncedSearch = useDebounce(filters.search, 300)
+  const debouncedSearch = useDebounce(filters.search, 300);
 
-  const { categories } = useCategories()
-  
+  const { categories } = useCategories();
+
   // Main prompts with proper infinite scroll
-  const { 
-    prompts, 
-    loading, 
-    error, 
-    hasMore, 
-    loadMore,
-    refresh, 
-    setPrompts 
-  } = usePrompts({
+  const { prompts, loading, error, hasMore, loadMore, refresh, setPrompts } = usePrompts({
     ...filters,
-    search: debouncedSearch
-  })
+    search: debouncedSearch,
+  });
 
   // DODANY useEffect do przewijania do podświetlonego prompta
   useEffect(() => {
     if (highlightedPromptId && !loading && prompts.length > 0) {
-      console.log('🎯 Attempting to scroll to highlighted prompt:', highlightedPromptId)
-      
+      console.log('🎯 Attempting to scroll to highlighted prompt:', highlightedPromptId);
+
       // Krótkie opóźnienie aby upewnić się, że DOM został zaktualizowany
       const scrollTimeout = setTimeout(() => {
-        const promptElement = document.getElementById(`prompt-${highlightedPromptId}`)
-        
+        const promptElement = document.getElementById(`prompt-${highlightedPromptId}`);
+
         if (promptElement) {
-          console.log('✅ Found prompt element, scrolling to it')
-          promptElement.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-          })
-          
+          console.log('✅ Found prompt element, scrolling to it');
+          promptElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+
           // Usuń podświetlenie po 3 sekundach
           setTimeout(() => {
-            console.log('🔄 Removing highlight from prompt:', highlightedPromptId)
-            setHighlightedPromptId(null)
-          }, 3000)
+            console.log('🔄 Removing highlight from prompt:', highlightedPromptId);
+            setHighlightedPromptId(null);
+          }, 3000);
         } else {
-          console.log('❌ Prompt element not found, scrolling to top')
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-          setHighlightedPromptId(null)
+          console.log('❌ Prompt element not found, scrolling to top');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setHighlightedPromptId(null);
         }
-      }, 500)
-      
-      return () => clearTimeout(scrollTimeout)
+      }, 500);
+
+      return () => clearTimeout(scrollTimeout);
     }
-  }, [highlightedPromptId, loading, prompts])
+  }, [highlightedPromptId, loading, prompts]);
 
   // Infinite scroll callback
   const infiniteScrollCallback = useCallback(() => {
     if (hasMore && !loading) {
-      loadMore()
+      loadMore();
     }
-  }, [loadMore, hasMore, loading])
+  }, [loadMore, hasMore, loading]);
 
-  const { observer, isFetching, resetFetching } = useInfiniteScroll(
-    infiniteScrollCallback,
-    { enabled: true }
-  )
+  const { observer, isFetching, resetFetching } = useInfiniteScroll(infiniteScrollCallback, {
+    enabled: true,
+  });
 
   // Reset fetching state when loading completes
   useEffect(() => {
     if (!loading && isFetching) {
-      resetFetching()
+      resetFetching();
     }
-  }, [loading, isFetching, resetFetching])
+  }, [loading, isFetching, resetFetching]);
 
   // Event handlers
-  const handleFiltersChange = useCallback((newFilters: Partial<FilterState>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
-  }, [setFilters])
+  const handleFiltersChange = useCallback(
+    (newFilters: Partial<FilterState>) => {
+      setFilters((prev) => ({ ...prev, ...newFilters }));
+    },
+    [setFilters],
+  );
 
   const handleAddPromptSuccess = useCallback(() => {
-    refresh()
-    setShowAddPrompt(false)
-  }, [refresh])
+    refresh();
+    setShowAddPrompt(false);
+  }, [refresh]);
 
-  const handlePromptUpdate = useCallback((promptId: string, updates: Partial<Prompt>) => {
-    setPrompts(prev => prev.map(p => p.id === promptId ? { ...p, ...updates } : p))
-  }, [setPrompts])
+  const handlePromptUpdate = useCallback(
+    (promptId: string, updates: Partial<Prompt>) => {
+      setPrompts((prev) => prev.map((p) => (p.id === promptId ? { ...p, ...updates } : p)));
+    },
+    [setPrompts],
+  );
 
   // RESET FUNCTIONALITY
   const resetToDefault = useCallback(() => {
-    console.log('🔄 Resetting PromptScroll to default state...')
-    
-    setFilters(defaultFilters)
-    setShowAllCategories(false)
-    setHighlightedPromptId(null)
-    setShowAddPrompt(false)
-    setShowMobileFilters(false)
-    
-    localStorage.removeItem('promptscroll-recent-searches')
-    refresh()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    
-    console.log('✅ Reset complete!')
-  }, [setFilters, refresh])
+    console.log('🔄 Resetting PromptScroll to default state...');
+
+    setFilters(defaultFilters);
+    setShowAllCategories(false);
+    setHighlightedPromptId(null);
+    setShowAddPrompt(false);
+    setShowMobileFilters(false);
+
+    localStorage.removeItem('promptscroll-recent-searches');
+    refresh();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    console.log('✅ Reset complete!');
+  }, [setFilters, refresh]);
 
   // CLEAR FILTERS FUNCTIONALITY - NEW
   const clearAllFilters = useCallback(() => {
-    console.log('🧹 Clearing all filters...')
-    
-    setFilters(defaultFilters)
-    setShowMobileFilters(false)
-    
-    console.log('✅ Filters cleared!')
-  }, [setFilters])
+    console.log('🧹 Clearing all filters...');
+
+    setFilters(defaultFilters);
+    setShowMobileFilters(false);
+
+    console.log('✅ Filters cleared!');
+  }, [setFilters]);
 
   // TAG NAVIGATION
-  const navigateToTag = useCallback((tag: string) => {
-    console.log('🏷️ Navigating to tag:', tag)
+  const navigateToTag = useCallback(
+    (tag: string) => {
+      console.log('🏷️ Navigating to tag:', tag);
 
-    const lower = tag.toLowerCase()
-    const difficulties = ['beginner', 'intermediate', 'advanced']
-    const models = ['chatgpt', 'claude', 'dalle', 'midjourney', 'gpt-4', 'gemini', 'perplexity', 'grok', 'other']
+      const lower = tag.toLowerCase();
+      const difficulties = ['beginner', 'intermediate', 'advanced'];
+      const models = [
+        'chatgpt',
+        'claude',
+        'dalle',
+        'midjourney',
+        'gpt-4',
+        'gemini',
+        'perplexity',
+        'grok',
+        'other',
+      ];
 
-    if (difficulties.includes(lower)) {
-      setFilters(prev => ({ ...prev, difficulty: lower as any, model: undefined, category: '', search: '' }))
-    } else if (models.includes(lower)) {
-      setFilters(prev => ({ ...prev, model: lower as any, difficulty: undefined, category: '', search: '' }))
-    } else {
-      // Check if tag matches a category name
-      const matchedCat = categories.find(c => c.name.toLowerCase() === lower)
-      if (matchedCat) {
-        setFilters(prev => ({ ...prev, category: matchedCat.id, search: '', model: undefined, difficulty: undefined }))
+      if (difficulties.includes(lower)) {
+        setFilters((prev) => ({
+          ...prev,
+          difficulty: lower as any,
+          model: undefined,
+          category: '',
+          search: '',
+        }));
+      } else if (models.includes(lower)) {
+        setFilters((prev) => ({
+          ...prev,
+          model: lower as any,
+          difficulty: undefined,
+          category: '',
+          search: '',
+        }));
       } else {
-        // default: treat as text search
-        setFilters({ category: '', search: tag, sortBy: 'popular' })
+        // Check if tag matches a category name
+        const matchedCat = categories.find((c) => c.name.toLowerCase() === lower);
+        if (matchedCat) {
+          setFilters((prev) => ({
+            ...prev,
+            category: matchedCat.id,
+            search: '',
+            model: undefined,
+            difficulty: undefined,
+          }));
+        } else {
+          // default: treat as text search
+          setFilters({ category: '', search: tag, sortBy: 'popular' });
+        }
       }
-    }
 
-    setShowAllCategories(false)
-    setHighlightedPromptId(null)
-    setShowMobileFilters(false)
+      setShowAllCategories(false);
+      setHighlightedPromptId(null);
+      setShowMobileFilters(false);
 
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    console.log('✅ Tag navigation complete!')
-  }, [setFilters, categories])
+      console.log('✅ Tag navigation complete!');
+    },
+    [setFilters, categories],
+  );
 
   // CHECK IF FILTERS ARE ACTIVE - ZAKTUALIZOWANE DLA NOWEGO DOMYŚLNEGO
   const hasActiveFilters = useCallback(() => {
-    return filters.category !== '' || 
-           filters.search !== '' || 
-           filters.sortBy !== 'popular' || // ZMIENIONE Z 'newest' NA 'popular'
-           filters.difficulty !== undefined ||
-           filters.model !== undefined ||
-           filters.verified !== undefined
-  }, [filters])
+    return (
+      filters.category !== '' ||
+      filters.search !== '' ||
+      filters.sortBy !== 'popular' || // ZMIENIONE Z 'newest' NA 'popular'
+      filters.difficulty !== undefined ||
+      filters.model !== undefined ||
+      filters.verified !== undefined
+    );
+  }, [filters]);
 
   return (
     <ErrorBoundary>
@@ -198,7 +245,7 @@ function App() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-16">
                 {/* Logo and Title */}
-                <button 
+                <button
                   onClick={resetToDefault}
                   className="flex items-center space-x-2 hover:opacity-80 transition-opacity group flex-shrink-0"
                   title="Reset to homepage"
@@ -208,7 +255,7 @@ function App() {
                     PromptScroll
                   </h1>
                 </button>
-                
+
                 {/* Desktop Search Bar - ALWAYS FUNCTIONAL */}
                 <div className="hidden lg:flex flex-1 max-w-md mx-8">
                   <SearchBar
@@ -222,7 +269,7 @@ function App() {
                 {/* Header Actions */}
                 <div className="flex items-center space-x-2">
                   {/* Mobile Settings Toggle */}
-                  <button 
+                  <button
                     onClick={() => setShowMobileFilters(!showMobileFilters)}
                     className="lg:hidden flex items-center space-x-1 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-colors text-white"
                   >
@@ -236,7 +283,7 @@ function App() {
                   </button>
 
                   {/* Add Prompt Button */}
-                  <button 
+                  <button
                     onClick={() => setShowAddPrompt(true)}
                     className="flex items-center space-x-1 sm:space-x-2 bg-gradient-to-r from-blue-500 to-purple-500 px-2 sm:px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium text-white text-sm sm:text-base whitespace-nowrap"
                   >
@@ -299,7 +346,7 @@ function App() {
                         <span>Clear All Filters</span>
                       </button>
                     )}
-                    
+
                     {/* Apply Settings Button */}
                     <button
                       onClick={() => setShowMobileFilters(false)}
@@ -501,7 +548,8 @@ function App() {
                             You've reached the end!
                           </p>
                           <p className="text-gray-500 text-sm">
-                            You've seen all {prompts.length} available prompts. Check back later for new content!
+                            You've seen all {prompts.length} available prompts. Check back later for
+                            new content!
                           </p>
                         </>
                       ) : filters.sortBy === 'popular' ? (
@@ -511,7 +559,8 @@ function App() {
                             All {prompts.length} Prompts by Popularity
                           </p>
                           <p className="text-orange-400/80 text-sm">
-                            You've seen all prompts sorted by popularity. Switch to "Newest" to see them chronologically.
+                            You've seen all prompts sorted by popularity. Switch to "Newest" to see
+                            them chronologically.
                           </p>
                         </>
                       ) : (
@@ -521,7 +570,8 @@ function App() {
                             All {prompts.length} Trending Prompts
                           </p>
                           <p className="text-green-400/80 text-sm">
-                            You've seen all trending prompts from the last 14 days. Check "Newest" or "Popular" for more content.
+                            You've seen all trending prompts from the last 14 days. Check "Newest"
+                            or "Popular" for more content.
                           </p>
                         </>
                       )}
@@ -546,7 +596,7 @@ function App() {
                   <span>Built on Bolt</span>
                   <ExternalLink className="h-3 w-3 flex-shrink-0" />
                 </a>
-                
+
                 <div className="text-center">
                   <p className="text-gray-400 text-xs sm:text-sm">
                     PromptScroll - Discover, share, and perfect AI prompts
@@ -557,7 +607,7 @@ function App() {
           </footer>
 
           {/* Add Prompt Modal */}
-          <AddPromptForm 
+          <AddPromptForm
             isOpen={showAddPrompt}
             onClose={() => setShowAddPrompt(false)}
             onSuccess={handleAddPromptSuccess}
@@ -565,7 +615,7 @@ function App() {
         </div>
       </TopPromptsProvider>
     </ErrorBoundary>
-  )
+  );
 }
 
-export default App
+export default App;

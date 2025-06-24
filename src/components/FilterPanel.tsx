@@ -1,23 +1,24 @@
-import React from 'react'
-import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react'
-import { useCategories } from '../hooks/useCategories'
-import type { FilterState, DifficultyLevel, AIModel } from '../types'
-import * as LucideIcons from 'lucide-react'
+import React from 'react';
+import { Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCategories } from '../hooks/useCategories';
+import type { FilterState, AIModel } from '../types';
+import { DIFFICULTY_LEVELS } from '../constants';
+import * as LucideIcons from 'lucide-react';
 
 interface FilterPanelProps {
-  filters: FilterState
-  onFiltersChange: (filters: Partial<FilterState>) => void
-  showAllCategories: boolean
-  onToggleCategories: () => void
+  filters: FilterState;
+  onFiltersChange: (filters: Partial<FilterState>) => void;
+  showAllCategories: boolean;
+  onToggleCategories: () => void;
 }
 
-export function FilterPanel({ 
-  filters, 
-  onFiltersChange, 
-  showAllCategories, 
-  onToggleCategories 
+export function FilterPanel({
+  filters,
+  onFiltersChange,
+  showAllCategories,
+  onToggleCategories,
 }: FilterPanelProps) {
-  const { categories } = useCategories()
+  const { categories } = useCategories();
 
   const aiModels: { value: AIModel; label: string }[] = [
     { value: 'chatgpt', label: 'ChatGPT' },
@@ -27,43 +28,40 @@ export function FilterPanel({
     { value: 'gpt-4', label: 'GPT-4' },
     { value: 'gemini', label: 'Gemini' },
     { value: 'perplexity', label: 'Perplexity' },
-    { value: 'grok', label: 'Grok' }
-  ]
+    { value: 'grok', label: 'Grok' },
+  ];
 
-  const difficultyLevels: { value: DifficultyLevel; label: string; color: string }[] = [
-    { value: 'beginner', label: 'Beginner', color: 'text-green-400' },
-    { value: 'intermediate', label: 'Intermediate', color: 'text-yellow-400' },
-    { value: 'advanced', label: 'Advanced', color: 'text-red-400' }
-  ]
+  const difficultyLevels = DIFFICULTY_LEVELS;
 
-  const initialCategoriesCount = 6
-  const visibleCategories = showAllCategories 
-    ? categories 
-    : categories.slice(0, initialCategoriesCount)
-  const hasMoreCategories = categories.length > initialCategoriesCount
+  const initialCategoriesCount = 6;
+  const visibleCategories = showAllCategories
+    ? categories
+    : categories.slice(0, initialCategoriesCount);
+  const hasMoreCategories = categories.length > initialCategoriesCount;
 
-  const hasActiveFilters = filters.category || filters.difficulty || filters.model || filters.verified !== undefined
+  const hasActiveFilters =
+    filters.category || filters.difficulty || filters.model || filters.verified !== undefined;
 
   const clearAllFilters = () => {
     onFiltersChange({
       category: '',
       difficulty: undefined,
       model: undefined,
-      verified: undefined
-    })
-  }
+      verified: undefined,
+    });
+  };
 
   // Active check based on category id now
   const isCategoryActive = (categoryId: string) => {
-    return filters.category === categoryId
-  }
+    return filters.category === categoryId;
+  };
 
   const handleCategorySelect = (categoryId: string) => {
-    const isActive = isCategoryActive(categoryId)
-    onFiltersChange({ 
-      category: isActive ? '' : categoryId
-    })
-  }
+    const isActive = isCategoryActive(categoryId);
+    onFiltersChange({
+      category: isActive ? '' : categoryId,
+    });
+  };
 
   return (
     <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/10">
@@ -91,9 +89,11 @@ export function FilterPanel({
           {aiModels.map((model) => (
             <button
               key={model.value}
-              onClick={() => onFiltersChange({ 
-                model: filters.model === model.value ? undefined : model.value 
-              })}
+              onClick={() =>
+                onFiltersChange({
+                  model: filters.model === model.value ? undefined : model.value,
+                })
+              }
               className={`px-2 sm:px-3 py-2 rounded-lg font-medium transition-all text-xs sm:text-sm whitespace-nowrap ${
                 filters.model === model.value
                   ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
@@ -113,9 +113,11 @@ export function FilterPanel({
           {difficultyLevels.map((level) => (
             <button
               key={level.value}
-              onClick={() => onFiltersChange({ 
-                difficulty: filters.difficulty === level.value ? undefined : level.value 
-              })}
+              onClick={() =>
+                onFiltersChange({
+                  difficulty: filters.difficulty === level.value ? undefined : level.value,
+                })
+              }
               className={`w-full px-3 py-2 rounded-lg font-medium transition-all text-sm flex items-center space-x-2 ${
                 filters.difficulty === level.value
                   ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
@@ -133,9 +135,11 @@ export function FilterPanel({
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-300 mb-3">Quality</label>
         <button
-          onClick={() => onFiltersChange({ 
-            verified: filters.verified === true ? undefined : true 
-          })}
+          onClick={() =>
+            onFiltersChange({
+              verified: filters.verified === true ? undefined : true,
+            })
+          }
           className={`w-full sm:w-auto px-4 py-2 rounded-lg font-medium transition-all text-sm ${
             filters.verified === true
               ? 'bg-green-500/20 text-green-300 border border-green-500/30'
@@ -151,11 +155,12 @@ export function FilterPanel({
         <label className="block text-sm font-medium text-gray-300 mb-3">Categories</label>
         <div className="grid grid-cols-1 gap-2">
           {visibleCategories.map((category) => {
-            const IconComponent = category.icon && (LucideIcons as any)[category.icon] 
-              ? (LucideIcons as any)[category.icon] 
-              : LucideIcons.Sparkles
-            const isActive = isCategoryActive(category.id)
-            
+            const IconComponent =
+              category.icon && (LucideIcons as any)[category.icon]
+                ? (LucideIcons as any)[category.icon]
+                : LucideIcons.Sparkles;
+            const isActive = isCategoryActive(category.id);
+
             return (
               <button
                 key={category.id}
@@ -169,7 +174,7 @@ export function FilterPanel({
                 <IconComponent className="h-4 w-4 flex-shrink-0" />
                 <span className="text-sm truncate">{category.name}</span>
               </button>
-            )
+            );
           })}
         </div>
 
@@ -181,10 +186,9 @@ export function FilterPanel({
               className="flex items-center space-x-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg font-medium transition-colors text-gray-300 hover:text-white border border-white/10"
             >
               <span className="text-sm">
-                {showAllCategories 
-                  ? `Show Less` 
-                  : `Show ${categories.length - initialCategoriesCount} More`
-                }
+                {showAllCategories
+                  ? `Show Less`
+                  : `Show ${categories.length - initialCategoriesCount} More`}
               </span>
               {showAllCategories ? (
                 <ChevronUp className="h-4 w-4" />
@@ -196,5 +200,5 @@ export function FilterPanel({
         )}
       </div>
     </div>
-  )
+  );
 }

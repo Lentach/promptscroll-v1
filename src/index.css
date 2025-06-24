@@ -64,7 +64,9 @@ a {
 
 /* Premium smooth transitions */
 * {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow,
+    transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -93,7 +95,8 @@ a {
 }
 
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
   50% {
@@ -102,7 +105,8 @@ a {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -137,7 +141,7 @@ a {
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -179,7 +183,7 @@ a {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
@@ -204,7 +208,9 @@ a {
   border-radius: inherit;
   padding: 1px;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.3s;
@@ -238,7 +244,7 @@ a {
   .bg-white\/5 {
     background-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   .border-white\/10 {
     border-color: rgba(255, 255, 255, 0.2);
   }
@@ -250,7 +256,7 @@ a {
     background: white !important;
     color: black !important;
   }
-  
+
   .backdrop-blur-xl,
   .backdrop-blur-md {
     backdrop-filter: none !important;

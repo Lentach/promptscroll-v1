@@ -1,10 +1,10 @@
 export function generateSmartTags(text: string): string[] {
-  const t = text.toLowerCase()
-  const tags: string[] = []
+  const t = text.toLowerCase();
+  const tags: string[] = [];
 
   const add = (tag: string) => {
-    if (!tags.includes(tag)) tags.push(tag)
-  }
+    if (!tags.includes(tag)) tags.push(tag);
+  };
 
   // mapping keyword -> tag
   const map: Record<string, string> = {
@@ -36,12 +36,12 @@ export function generateSmartTags(text: string): string[] {
     interview: 'interview',
     seo: 'seo',
     cooking: 'cooking',
-    recipe: 'cooking'
-  }
+    recipe: 'cooking',
+  };
 
   for (const keyword in map) {
-    if (t.includes(keyword)) add(map[keyword])
+    if (t.includes(keyword)) add(map[keyword]);
   }
 
-  return tags
-} 
+  return tags;
+}
