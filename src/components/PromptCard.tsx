@@ -469,29 +469,11 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
               </span>
               <span className="hidden sm:inline">•</span>
               <span className="hidden sm:inline">by {prompt.author_name}</span>
-              {prompt.quality_score > 0 && (
-                <>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="text-yellow-400 hidden sm:inline flex items-center space-x-1">
-                    <span>★</span>
-                    <span>{prompt.quality_score.toFixed(1)}</span>
-                  </span>
-                </>
-              )}
             </div>
             
             {/* Mobile-only author and quality with enhanced styling */}
             <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1 sm:hidden">
               <span className="bg-white/5 rounded-full px-2 py-0.5">by {prompt.author_name}</span>
-              {prompt.quality_score > 0 && (
-                <>
-                  <span>•</span>
-                  <span className="text-yellow-400 flex items-center space-x-1 bg-yellow-400/10 rounded-full px-2 py-0.5">
-                    <span>★</span>
-                    <span>{prompt.quality_score.toFixed(1)}</span>
-                  </span>
-                </>
-              )}
             </div>
           </div>
         </div>

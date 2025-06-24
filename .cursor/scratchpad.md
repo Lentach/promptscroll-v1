@@ -1,30 +1,33 @@
-## 2025-06-23 – Planner: Fix Filters (AI Model, Difficulty, Verified)
-Users report that clicking AI model or difficulty filter does not change the prompt list. Investigation shows `usePrompts` ignores `difficulty`, `model`, and `verified` fields in `FilterState`. The component updates UI state but backend query lacks conditions.
+## 2025-06-23 – Planner: Remove Rating System (Star Icon & Score)
+Goal: Remove all UI elements and logic related to prompt rating (quality_score star display). Database field can stay but should be ignored.
 
-### Root Cause
-`usePrompts` only destructures `category`, `search`, `sortBy`, `limit` from options. The other filter properties are neither memoized nor applied in the Supabase query.
+### Affected Areas
+1. `PromptCard.tsx` – star icon and score displayed in header & mobile sections.
+2. `AddPromptForm.tsx` – any inputs for rating? (likely none)
+3. `FilterPanel.tsx` – verified/quality filter remains; rating star not used here.
+4. Any hooks or logic referencing `quality_score`.
+5. CSS / helper functions for rating visuals.
 
-### Proposed Fix
-1. Extend destructuring in `usePrompts` to include `difficulty`, `model`, `verified`.
-2. Include corresponding `eq` filters in Supabase query when those values are present:
-   • difficulty_level = difficulty
-   • primary_model = model
-   • is_verified = true (if verified flag set)
-3. Add these fields to `queryParams` dependency list for memoization so `useEffect` triggers refresh.
-4. Unit/manual test:
-   – Select filters, check network requests include query params and UI updates accordingly.
-5. Update comments and README.
+### Proposed Steps
+1. Locate code sections rendering star icon and `quality_score` value in `PromptCard.tsx` (desktop and mobile variants).
+2. Remove JSX blocks and associated helper logic (e.g., `shouldShowAward` may still use usesCount; rating star itself to be removed).
+3. Ensure layout remains consistent after removal (adjust flex gaps/spans).
+4. Search repo for `quality_score` usages; if only display, leave backend untouched.
+5. Run ESLint & TypeScript to ensure no unused vars.
+6. Manual test – cards render correctly without rating.
+7. Update README/docs screenshots if applicable.
 
 ### Task Breakdown
-- [x] F1. Update `usePrompts.ts` to accept difficulty, model, verified. ✅
-- [x] F2. Modify query building logic accordingly. ✅
-- [x] F3. Ensure `queryParams` includes new fields. ✅
-- [x] F4. Manual smoke test for each filter. ✅ Works after backend query update.
-- [ ] F5. Document behavior in README.
-
-## 2025-06-23 – Executor Progress Update (Filter Fix)
-Implemented filter logic in `usePrompts.ts` (difficulty, model, verified). Pending manual smoke tests and docs.
-
-## 2025-06-23 – Executor Progress Update (AddPrompt outside click)
-Added outside-click handler in `AddPromptForm.tsx`: clicking overlay now triggers `onClose`, clicks inside modal stop propagation.
-np
+- [x] R1. Identify rating JSX in `PromptCard.tsx` and comment reference lines.
+- [x] R2. Remove star icon + score elements (desktop + mobile sections).
+- [x] R3. Clean unused variables/constants (none needed).
+- [x] R4. Search & remove other `quality_score` displays.
+- [x] R5. Lint & type-check.
+- [ ] R6. Manual smoke test in UI.
+- [ ] R1. Identify rating JSX in `PromptCard.tsx` and comment reference lines.
+- [ ] R2. Remove star icon + score elements (desktop + mobile sections).
+- [ ] R3. Clean unused variables/constants (`difficultyColors` unaffected).
+- [ ] R4. Search & remove other `quality_score` displays.
+- [ ] R5. Lint & type-check.
+- [ ] R6. Manual smoke test in UI.
+- [ ] R7. Update docs (optional).
