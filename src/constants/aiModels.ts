@@ -32,7 +32,7 @@ export const AI_MODELS = {
   },
   midjourney: {
     name: 'Midjourney',
-    url: 'https://chat.midjourney.com/'
+    url: 'https://www.midjourney.com/'
   },
   gemini: {
     name: 'Gemini',

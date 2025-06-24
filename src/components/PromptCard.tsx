@@ -491,9 +491,17 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
         {/* Animated background pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300 pointer-events-none" />
         
-        <pre className="text-gray-200 text-xs sm:text-sm whitespace-pre-wrap font-mono leading-relaxed relative z-10">
+        <pre
+          className={`text-gray-200 text-xs sm:text-sm whitespace-pre-wrap font-mono leading-relaxed relative z-10 transition-max-height duration-300 ${showFullContent ? '' : 'max-h-48 overflow-hidden'}`}
+          aria-expanded={showFullContent}
+        >
           {displayContent}
         </pre>
+        
+        {/* Fade-out gradient when collapsed */}
+        {!showFullContent && (
+          <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-b from-transparent to-black/80 pointer-events-none" />
+        )}
         
         {prompt.content.length > 300 && (
           <button
