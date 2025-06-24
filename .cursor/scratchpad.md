@@ -52,3 +52,8 @@ Implemented fallback logic in `AddPromptForm` to guarantee at least 5 tags and i
 
 Hotfix: Added pointer-events-none to decorative overlay so tag buttons receive clicks.
 - [ ] Re-test clickability.
+
+## 2025-06-23 – Executor Mobile fixes
+• Buttons: added preventDefault/stopPropagation and type="button" (including RedirectButton).
+• Header hidden on mobile (Discover section).
+Please test on mobile: ensure header gone and actions no longer reset scroll.

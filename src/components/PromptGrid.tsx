@@ -111,7 +111,7 @@ export function PromptGrid({
     <div className="space-y-6">
       {/* Enhanced Results Header with premium styling */}
       {prompts.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
+        <div className="hidden md:flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
           {/* Left side - Results count with enhanced styling */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 text-sm text-gray-300">
             <span className="font-medium text-white flex items-center space-x-2">

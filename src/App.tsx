@@ -117,8 +117,8 @@ function App() {
   }, [refresh])
 
   const handlePromptUpdate = useCallback((promptId: string, updates: Partial<Prompt>) => {
-    refresh()
-  }, [refresh])
+    setPrompts(prev => prev.map(p => p.id === promptId ? { ...p, ...updates } : p))
+  }, [setPrompts])
 
   // RESET FUNCTIONALITY
   const resetToDefault = useCallback(() => {
@@ -400,7 +400,7 @@ function App() {
 
               {/* Main Feed - FULL WIDTH ON MOBILE */}
               <div className="col-span-1 lg:col-span-3">
-                <div className="mb-6">
+                <div className="hidden md:block mb-6">
                   <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-white">
                     Discover Amazing AI Prompts
                   </h2>

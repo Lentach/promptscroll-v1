@@ -194,6 +194,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [isHovered, setIsHovered] = useState(false)
+  const [showAllTags, setShowAllTags] = useState(false)
 
   // Get AI model configuration
   const modelConfig = getAIModelIcon(prompt.primary_model)
@@ -208,7 +209,8 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   }, [error])
 
   // ENHANCED LIKE HANDLER with smooth animations
-  const handleLike = useCallback(async () => {
+  const handleLike = useCallback(async (e?: React.MouseEvent) => {
+    e?.preventDefault(); e?.stopPropagation();
     if (hasLiked || hasDisliked || isLoading(prompt.id, 'like')) {
       return
     }
@@ -223,7 +225,8 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   }, [hasLiked, hasDisliked, isLoading, likePrompt, prompt.id, likesCount])
 
   // ENHANCED DISLIKE HANDLER with smooth animations
-  const handleDislike = useCallback(async () => {
+  const handleDislike = useCallback(async (e?: React.MouseEvent) => {
+    e?.preventDefault(); e?.stopPropagation();
     if (hasLiked || hasDisliked || isLoading(prompt.id, 'dislike')) {
       return
     }
@@ -238,7 +241,8 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   }, [hasLiked, hasDisliked, isLoading, dislikePrompt, prompt.id, dislikesCount])
 
   // Enhanced copy handler with premium feedback
-  const handleCopy = useCallback(async () => {
+  const handleCopy = useCallback(async (e?: React.MouseEvent) => {
+    e?.preventDefault(); e?.stopPropagation();
     if (copyStatus !== 'idle') return
     
     try {
@@ -258,7 +262,8 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   }, [copyStatus, copyPrompt, prompt.id, prompt.content, usesCount])
 
   // Redirect use handler – only increments usage (no clipboard copy)
-  const handleRedirectUse = useCallback(async () => {
+  const handleRedirectUse = useCallback(async (e?: React.MouseEvent) => {
+    e?.preventDefault(); e?.stopPropagation();
     try {
       setError(null)
       const { uses } = await recordUse(prompt.id, usesCount)
@@ -554,7 +559,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
       {/* Enhanced Tags with premium animations */}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
-          {tags.slice(0, 6).map((tag, index) => (
+          {(showAllTags ? tags : tags.slice(0, 6)).map((tag, index) => (
             <button
               key={index}
               onClick={() => onTagClick?.(tag)}
@@ -564,10 +569,21 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
               #{tag}
             </button>
           ))}
-          {tags.length > 6 && (
-            <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 rounded-full text-xs font-medium border border-gray-500/30">
+          {tags.length > 6 && !showAllTags && (
+            <button
+              onClick={() => setShowAllTags(true)}
+              className="px-2 sm:px-3 py-1 bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 rounded-full text-xs font-medium border border-gray-500/30 hover:bg-gray-500/30 transition-colors"
+            >
               +{tags.length - 6} more
-            </span>
+            </button>
+          )}
+          {showAllTags && tags.length > 6 && (
+            <button
+              onClick={() => setShowAllTags(false)}
+              className="px-2 sm:px-3 py-1 bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 rounded-full text-xs font-medium border border-gray-500/30 hover:bg-gray-500/30 transition-colors"
+            >
+              show less
+            </button>
           )}
         </div>
       )}
@@ -598,6 +614,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
             disabled={hasLiked || hasDisliked || isLoading(prompt.id, 'like')}
             className={`p-2 rounded-xl font-medium transition-all duration-300 flex-shrink-0 ${getLikeButtonStyle()}`}
             title={hasLiked ? 'You already liked this' : hasDisliked ? 'You already disliked this' : 'Like this prompt'}
+            type="button"
           >
             <ThumbsUp className={`h-4 w-4 ${hasLiked ? 'fill-current' : ''}`} />
           </button>
@@ -608,6 +625,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
             disabled={hasLiked || hasDisliked || isLoading(prompt.id, 'dislike')}
             className={`p-2 rounded-xl font-medium transition-all duration-300 flex-shrink-0 ${getDislikeButtonStyle()}`}
             title={hasDisliked ? 'You already disliked this' : hasLiked ? 'You already liked this' : 'Dislike this prompt'}
+            type="button"
           >
             <ThumbsDown className={`h-4 w-4 ${hasDisliked ? 'fill-current' : ''}`} />
           </button>
@@ -618,6 +636,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
             disabled={copyStatus !== 'idle'}
             className={`p-2 rounded-xl font-medium transition-all duration-300 flex-shrink-0 ${getCopyButtonStyle()}`}
             title={copyStatus === 'copied' ? 'Copied to clipboard! ✓' : 'Copy prompt to clipboard'}
+            type="button"
           >
             {getCopyButtonIcon()}
           </button>
@@ -628,6 +647,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
             promptContent={prompt.content}
             onUseComplete={handleRedirectUse}
             className={`${getUseButtonStyle()} relative overflow-hidden group/use`}
+            type="button"
           >
             {/* Animated background - only for non-Grok models */}
             {prompt.primary_model !== 'grok' && (

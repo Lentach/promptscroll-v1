@@ -43,7 +43,7 @@ export const RedirectButton: React.FC<RedirectButtonProps> = ({
   }, [meta.url, onUseComplete, promptContent])
 
   return (
-    <button {...buttonProps} onClick={handleClick} title={`Open ${meta.name} and copy prompt to clipboard`}>
+    <button type="button" {...buttonProps} onClick={handleClick} title={`Open ${meta.name} and copy prompt to clipboard`}>
       {children ?? `Try in ${meta.name}`}
     </button>
   )
