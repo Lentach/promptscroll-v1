@@ -153,3 +153,11 @@ Podstawowy flow: wyświetlanie kart promptów (z liczeniem "like", "dislike", "u
 7. GraphQL edge caches → rozważ Hasura jeżeli query stają się skomplikowane.
 
 _Te punkty nie mają jeszcze priorytetu – do omówienia z właścicielem produktu._
+
+### M1 – Mobile UI Improvements
+- [x] M1.1 Increase opacity of search input background for better readability (SearchBar bg-white/20)
+- [x] M1.2 Add copy button next to prompt text in PromptCard (clipboard)
+- [x] M1.3 Remove search bar from settings overlay
+- [x] M1.4 Fix "Show Less" scroll alignment in PromptCard
+- [x] M1.5 Copy button: animated state + updates usesCount via API
+- [x] M1.6 Increase SearchBar opacity to bg-white/30

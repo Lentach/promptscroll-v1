@@ -23,17 +23,6 @@ export function SearchBar({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const popularSearches = [
-    'business email',
-    'creative writing',
-    'code review',
-    'social media',
-    'marketing strategy',
-    'data analysis',
-    'customer support',
-    'content creation',
-  ];
-
   const handleSubmit = (searchTerm: string) => {
     if (searchTerm.trim()) {
       // Add to recent searches (avoid duplicates)
@@ -131,7 +120,7 @@ export function SearchBar({
 
       {/* FIXED Search Suggestions - better positioning and event handling */}
       {showSuggestions && (isFocused || value) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-[60] max-h-80 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-[60] max-h-80 overflow-y-auto">
           {/* Recent Searches */}
           {recentSearches.length > 0 && (
             <div className="p-3 border-b border-white/10">
@@ -157,32 +146,6 @@ export function SearchBar({
               </div>
             </div>
           )}
-
-          {/* Popular Searches */}
-          <div className="p-3">
-            <div className="flex items-center space-x-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-gray-400" />
-              <span className="text-sm font-medium text-gray-300">Popular</span>
-              <Sparkles className="h-3 w-3 text-yellow-400" />
-            </div>
-            <div className="space-y-1">
-              {popularSearches.map((search, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleSubmit(search);
-                  }}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-blue-500/10 rounded-lg transition-colors flex items-center space-x-2 group"
-                >
-                  <TrendingUp className="h-3 w-3 text-gray-500 group-hover:text-blue-400" />
-                  <span>{search}</span>
-                  {index < 3 && <Zap className="h-3 w-3 text-yellow-400 ml-auto" />}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Footer */}
           <div className="px-3 py-2 border-t border-white/10 bg-white/5">

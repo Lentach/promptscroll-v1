@@ -316,15 +316,7 @@ function App() {
 
                 {/* Mobile Settings Content */}
                 <div className="p-4 space-y-6">
-                  {/* FIXED Mobile Search - Now fully functional */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Search</label>
-                    <SearchBar
-                      value={filters.search}
-                      onChange={(value) => handleFiltersChange({ search: value })}
-                      placeholder="Search prompts..."
-                    />
-                  </div>
+                  {/* Search bar removed from settings as per mobile UI optimization */}
 
                   {/* Mobile Filters Panel - REMOVED SORT OPTIONS FROM HERE */}
                   <FilterPanel

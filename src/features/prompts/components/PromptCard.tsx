@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   TrendingUp,
   Shield,
@@ -10,12 +10,16 @@ import {
   Bot,
   Sparkles,
   Zap,
+  Copy,
+  Loader,
+  Check,
 } from 'lucide-react';
 
 import { useTopPrompts } from '../hooks/useTopPrompts';
 import type { Prompt } from '@/types';
 import { ActionBar } from './ActionBar';
 import { DIFFICULTY_COLOR_MAP } from '@/constants';
+import { usePromptActions } from '../hooks/usePromptActions';
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -185,14 +189,18 @@ const getAIModelIcon = (model: string) => {
 export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }: PromptCardProps) {
   const { topIds } = useTopPrompts();
 
+  // prompt actions (reuse same API as ActionBar)
+  const { copyPrompt, isLoading } = usePromptActions({ onUpdate });
+
   // Local state
   const [likesCount, setLikesCount] = useState(prompt.total_likes);
   const [dislikesCount, setDislikesCount] = useState(prompt.total_dislikes || 0);
-  const [usesCount, setUsesCount] = useState(prompt.total_uses);
+  const [usesCount, setUsesCount] = useState(prompt.total_uses || 0);
   const [showFullContent, setShowFullContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied'>('idle');
 
   // Get AI model configuration
   const modelConfig = getAIModelIcon(prompt.primary_model);
@@ -211,6 +219,43 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
     prompt.content.length > 300 ? prompt.content.substring(0, 300) + '...' : prompt.content;
   const displayContent = showFullContent ? prompt.content : truncatedContent;
   const tags: string[] = prompt.prompt_tags?.map((pt) => pt.tag) || [];
+
+  /* --------------------------- Copy button helpers --------------------------- */
+  const getCopyButtonStyle = () => {
+    switch (copyStatus) {
+      case 'copying':
+        return 'bg-blue-500/30 text-blue-200 border border-blue-400/50 cursor-wait scale-95 shadow-lg shadow-blue-500/20';
+      case 'copied':
+        return 'bg-green-500/30 text-green-200 border border-green-400/50 scale-105 shadow-xl shadow-green-500/30 animate-pulse';
+      default:
+        return 'bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white border border-transparent hover:border-white/20 hover:shadow-lg hover:shadow-white/10 transition-all duration-300';
+    }
+  };
+
+  const getCopyButtonIcon = () => {
+    switch (copyStatus) {
+      case 'copying':
+        return <Loader className="h-4 w-4 animate-spin" />;
+      case 'copied':
+        return <Check className="h-4 w-4" />;
+      default:
+        return <Copy className="h-4 w-4" />;
+    }
+  };
+
+  const handleCopy = useCallback(async () => {
+    if (copyStatus !== 'idle' || isLoading(prompt.id, 'copy')) return;
+
+    try {
+      setCopyStatus('copying');
+      const { uses } = await copyPrompt(prompt.id, prompt.content, usesCount);
+      setUsesCount(uses);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 3000);
+    } catch {
+      setCopyStatus('idle');
+    }
+  }, [copyStatus, isLoading, prompt.id, prompt.content, usesCount, copyPrompt]);
 
   return (
     <div
@@ -341,6 +386,15 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
         {/* Animated background pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
+        {/* Copy button */}
+        <button
+          onClick={handleCopy}
+          className={`absolute top-2 right-2 p-2 rounded-lg backdrop-blur-md transition-all ${getCopyButtonStyle()}`}
+          title="Copy prompt"
+        >
+          {getCopyButtonIcon()}
+        </button>
+
         <pre
           className={`text-gray-200 text-xs sm:text-sm whitespace-pre-wrap font-mono leading-relaxed relative z-10 transition-max-height duration-300 ${showFullContent ? '' : 'max-h-48 overflow-hidden'}`}
           aria-expanded={showFullContent}
@@ -355,7 +409,17 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
 
         {prompt.content.length > 300 && (
           <button
-            onClick={() => setShowFullContent(!showFullContent)}
+            onClick={() => {
+              setShowFullContent((prev) => {
+                const next = !prev;
+                // If collapsing (show less), scroll card into view for better UX
+                if (prev && !next) {
+                  const el = document.getElementById(`prompt-${prompt.id}`);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                return next;
+              });
+            }}
             className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-xs mt-3 font-medium transition-all duration-300 hover:scale-105 bg-blue-500/10 rounded-lg px-2 py-1 border border-blue-500/20"
           >
             {showFullContent ? (
