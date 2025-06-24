@@ -150,21 +150,34 @@ function App() {
   // TAG NAVIGATION
   const navigateToTag = useCallback((tag: string) => {
     console.log('🏷️ Navigating to tag:', tag)
-    
-    setFilters({
-      category: '',
-      search: tag,
-      sortBy: 'popular' // ZMIENIONE Z 'newest' NA 'popular'
-    })
-    
+
+    const lower = tag.toLowerCase()
+    const difficulties = ['beginner', 'intermediate', 'advanced']
+    const models = ['chatgpt', 'claude', 'dalle', 'midjourney', 'gpt-4', 'gemini', 'perplexity', 'grok', 'other']
+
+    if (difficulties.includes(lower)) {
+      setFilters(prev => ({ ...prev, difficulty: lower as any, model: undefined, category: '', search: '' }))
+    } else if (models.includes(lower)) {
+      setFilters(prev => ({ ...prev, model: lower as any, difficulty: undefined, category: '', search: '' }))
+    } else {
+      // Check if tag matches a category name
+      const matchedCat = categories.find(c => c.name.toLowerCase() === lower)
+      if (matchedCat) {
+        setFilters(prev => ({ ...prev, category: matchedCat.id, search: '', model: undefined, difficulty: undefined }))
+      } else {
+        // default: treat as text search
+        setFilters({ category: '', search: tag, sortBy: 'popular' })
+      }
+    }
+
     setShowAllCategories(false)
     setHighlightedPromptId(null)
     setShowMobileFilters(false)
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    
+
     console.log('✅ Tag navigation complete!')
-  }, [setFilters])
+  }, [setFilters, categories])
 
   // CHECK IF FILTERS ARE ACTIVE - ZAKTUALIZOWANE DLA NOWEGO DOMYŚLNEGO
   const hasActiveFilters = useCallback(() => {
@@ -474,7 +487,7 @@ function App() {
                       {filters.sortBy === 'newest' ? (
                         <>
                           <p className="text-gray-400 text-lg font-medium mb-2">
-                            �� You've reached the end!
+                            You've reached the end!
                           </p>
                           <p className="text-gray-500 text-sm">
                             You've seen all {prompts.length} available prompts. Check back later for new content!

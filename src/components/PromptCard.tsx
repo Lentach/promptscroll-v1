@@ -386,8 +386,8 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-pink-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      {/* Animated background gradient (non-interactive) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-pink-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       
       {/* Error Message with enhanced styling */}
       {error && (
@@ -489,7 +489,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
       {/* Enhanced Prompt Content with premium styling */}
       <div className="bg-gradient-to-br from-black/30 to-black/20 rounded-2xl p-3 sm:p-4 mb-4 border border-white/10 relative overflow-hidden group/content">
         {/* Animated background pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover/content:opacity-100 transition-opacity duration-300 pointer-events-none" />
         
         <pre className="text-gray-200 text-xs sm:text-sm whitespace-pre-wrap font-mono leading-relaxed relative z-10">
           {displayContent}

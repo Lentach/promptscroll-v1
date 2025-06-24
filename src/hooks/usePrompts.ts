@@ -57,6 +57,9 @@ export function usePrompts(options?: UsePromptsOptions): UsePromptsReturn {
             name,
             color,
             icon
+          ),
+          prompt_tags (
+            tag
           )
         `)
 
@@ -76,7 +79,20 @@ export function usePrompts(options?: UsePromptsOptions): UsePromptsReturn {
       }
 
       if (search) {
-        query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`)
+        const likeStr = `%${search}%`
+        query = query.or(`title.ilike.${likeStr},content.ilike.${likeStr}`)
+                     .or(`tag.ilike.${likeStr}`, { foreignTable: 'prompt_tags' })
+
+        // Extra: if search matches difficulty level or model id, filter exactly
+        const difficulties = ['beginner', 'intermediate', 'advanced']
+        const models = ['chatgpt', 'claude', 'dalle', 'midjourney', 'gpt-4', 'gemini', 'perplexity', 'grok', 'other']
+        const lower = search.toLowerCase().trim()
+        if (difficulties.includes(lower)) {
+          query = query.eq('difficulty_level', lower)
+        }
+        if (models.includes(lower)) {
+          query = query.eq('primary_model', lower)
+        }
       }
 
       if (difficulty) {

@@ -253,31 +253,41 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
       console.log('✅ Prompt inserted successfully:', promptData)
 
       // ENHANCED TAG PROCESSING - Always add tags for better searchability
-      const tagsToAdd = []
-      
-      // AUTO-ADD SMART TAGS based on content and category
-      const primaryCategory = categories.find(c => c.id === formData.category_ids[0])
-      if (primaryCategory) {
-        // Add category name as tag
-        tagsToAdd.push(primaryCategory.name.toLowerCase())
-        
-        // Add AI model as tag
-        tagsToAdd.push(formData.primary_model)
-        
-        // Add difficulty as tag
-        tagsToAdd.push(formData.difficulty_level)
-        
-        // Add smart tags based on content
-        const content = formData.content.toLowerCase()
-        const title = formData.title.toLowerCase()
-        const description = formData.description.toLowerCase()
-        const allText = `${title} ${description} ${content}`
-        
-        tagsToAdd.push(...generateSmartTags(allText))
-      }
-      
+      const tagsToAdd: string[] = []
+
+      // 1. Category names as tags (all selected categories)
+      formData.category_ids.forEach(cid => {
+        const cat = categories.find(c => c.id === cid)
+        if (cat) tagsToAdd.push(cat.name.toLowerCase())
+      })
+
+      // 2. AI model & difficulty level
+      tagsToAdd.push(formData.primary_model)
+      tagsToAdd.push(formData.difficulty_level)
+
+      // 3. Smart tags from full text
+      const fullText = `${formData.title} ${formData.description} ${formData.content}`.toLowerCase()
+      tagsToAdd.push(...generateSmartTags(fullText))
+
       // Remove duplicates and empty tags
-      const uniqueTags = [...new Set(tagsToAdd)].filter(tag => tag && tag.length > 0)
+      let uniqueTags: string[] = [...new Set(tagsToAdd)].filter(tag => tag && tag.length > 0)
+
+      // Ensure at least 5 tags by adding meaningful words from content/title
+      if (uniqueTags.length < 5) {
+        const fallbackText = fullText
+        const extraCandidates = Array.from(
+          new Set(
+            fallbackText
+              .split(/[^a-zA-Z0-9]+/)
+              .map((w: string) => w.toLowerCase())
+              .filter((w: string) => w.length > 4 && !uniqueTags.includes(w))
+          )
+        )
+        for (const word of extraCandidates) {
+          uniqueTags.push(word)
+          if (uniqueTags.length >= 5) break
+        }
+      }
       
       console.log('🏷️ Adding tags:', uniqueTags)
 
@@ -289,7 +299,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
 
         const { error: tagsError } = await supabase
           .from('prompt_tags')
-          .insert(tagInserts)
+          .upsert(tagInserts, { ignoreDuplicates: true })
 
         if (tagsError) {
           console.error('Error adding tags:', tagsError)
