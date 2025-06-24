@@ -409,13 +409,24 @@ function App() {
                   </p>
                 </div>
 
-                {/* NEW: MOBILE SORT OPTIONS - VISIBLE ONLY ON MOBILE */}
+                {/* Mobile Sort & Search */}
                 <div className="lg:hidden mb-6">
                   <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                    {/* Mobile SearchBar */}
+                    <SearchBar
+                      value={filters.search}
+                      onChange={(value) => handleFiltersChange({ search: value })}
+                      placeholder="Search amazing prompts..."
+                      className="w-full mb-4"
+                    />
+
+                    {/* Sort header */}
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                       <TrendingUp className="h-5 w-5 mr-2 text-blue-500" />
                       Sort By
                     </h3>
+
+                    {/* Sort buttons grid */}
                     <div className="grid grid-cols-3 gap-3">
                       <button
                         onClick={() => handleFiltersChange({ sortBy: 'newest' })}

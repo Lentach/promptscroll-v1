@@ -11,6 +11,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useCategories } from '../hooks/useCategories'
 import { generateSmartTags } from '../utils/smartTags'
+import { detectCategories } from '../utils/autoCategories'
 
 interface AddPromptFormProps {
   isOpen: boolean
@@ -209,11 +210,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         throw new Error('Title and content are required')
       }
 
-      // Validate category selection
-      if (formData.category_ids.length === 0) {
-        throw new Error('Please select at least one category')
-      }
-
       console.log('📝 Submitting prompt with data:', {
         title: formData.title,
         category_ids: formData.category_ids,
@@ -255,11 +251,9 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
       // ENHANCED TAG PROCESSING - Always add tags for better searchability
       const tagsToAdd: string[] = []
 
-      // 1. Category names as tags (all selected categories)
-      formData.category_ids.forEach(cid => {
-        const cat = categories.find(c => c.id === cid)
-        if (cat) tagsToAdd.push(cat.name.toLowerCase())
-      })
+      // 1. Category names as tags (auto-detected categories)
+      const detectedCats = detectCategories(formData.title + ' ' + formData.description + ' ' + formData.content, categories)
+      detectedCats.forEach(cat => tagsToAdd.push(cat.name.toLowerCase()))
 
       // 2. AI model & difficulty level
       tagsToAdd.push(formData.primary_model)
@@ -267,6 +261,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
 
       // 3. Smart tags from full text
       const fullText = `${formData.title} ${formData.description} ${formData.content}`.toLowerCase()
+      const catIds = detectedCats.map(c => c.id)
       tagsToAdd.push(...generateSmartTags(fullText))
 
       // Remove duplicates and empty tags
@@ -309,9 +304,9 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         }
       }
 
-      // Insert into prompt_categories join table
-      if (promptData && formData.category_ids.length > 0) {
-        const rows = formData.category_ids.map(cid => ({ prompt_id: promptData.id, category_id: cid }))
+      // Insert into prompt_categories join table (auto categories)
+      if (promptData && catIds.length > 0) {
+        const rows = catIds.map(cid => ({ prompt_id: promptData.id, category_id: cid }))
         await supabase.from('prompt_categories').insert(rows)
       }
 
@@ -470,41 +465,44 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
                   </div>
                 </div>
 
-                {/* Category */}
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Category <span className="text-red-400">*</span>
-                  </label>
-                  <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto p-1 bg-white/5 border border-white/10 rounded-lg">
-                    {categories.map(category => {
-                      const isActive = formData.category_ids.includes(category.id)
-                      return (
-                        <button
-                          type="button"
-                          key={category.id}
-                          onClick={() => handleCategoriesChange(
-                            isActive
-                              ? formData.category_ids.filter(id => id !== category.id)
-                              : [...formData.category_ids, category.id]
-                          )}
-                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all border  ${
-                            isActive
-                              ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                              : 'bg-transparent text-gray-300 hover:bg-white/10 border-transparent'
-                          }`}
-                        >
-                          <span>{category.name}</span>
-                          {isActive && <span className="text-blue-300">✓</span>}
-                        </button>
-                      )
-                    })}
+                {/* Category UI removed */}
+                <div className="hidden">
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-2">
+                      Category <span className="text-red-400">*</span>
+                    </label>
+                    <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto p-1 bg-white/5 border border-white/10 rounded-lg">
+                      {categories.map(category => {
+                        const isActive = formData.category_ids.includes(category.id)
+                        return (
+                          <button
+                            type="button"
+                            key={category.id}
+                            onClick={() => handleCategoriesChange(
+                              isActive
+                                ? formData.category_ids.filter(id => id !== category.id)
+                                : [...formData.category_ids, category.id]
+                            )}
+                            className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all border  ${
+                              isActive
+                                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                : 'bg-transparent text-gray-300 hover:bg-white/10 border-transparent'
+                            }`}
+                          >
+                            <span>{category.name}</span>
+                            {isActive && <span className="text-blue-300">✓</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {formData.category_ids.length > 0 && (
+                      <p className="text-xs text-green-400 mt-1">
+                        ✓ Selected: {formData.category_ids.length} categories
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-400 mb-3">Tagi zostaną wygenerowane automatycznie na podstawie treści prompta, kategorii i wybranego modelu AI.</p>
                   </div>
-                  {formData.category_ids.length > 0 && (
-                    <p className="text-xs text-green-400 mt-1">
-                      ✓ Selected: {formData.category_ids.length} categories
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-400 mb-3">Tagi zostaną wygenerowane automatycznie na podstawie treści prompta, kategorii i wybranego modelu AI.</p>
                 </div>
               </div>
 
