@@ -29,7 +29,7 @@ export interface Prompt {
   prompt_tags?: {
     tag: string;
   }[];
-  public_profiles?: {
+  profiles?: {
     display_name: string;
     avatar_url: string | null;
   };

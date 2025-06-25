@@ -207,7 +207,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const ModelIcon = modelConfig.icon;
 
   // Determine author display
-  const profile = prompt.public_profiles;
+  const profile = (prompt as any).profiles ?? (prompt as any).public_profiles;
   const authorName = profile?.display_name ?? prompt.author_name ?? 'Anonymous';
   const authorAvatar = profile?.avatar_url ?? null;
 

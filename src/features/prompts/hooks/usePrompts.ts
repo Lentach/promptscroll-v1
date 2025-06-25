@@ -28,10 +28,6 @@ export function usePrompts(options?: FilterState & { limit?: number }) {
         ),
         prompt_tags (
           tag
-        ),
-        public_profiles!prompts_author_id_fkey (
-          display_name,
-          avatar_url
         )
       `,
     );

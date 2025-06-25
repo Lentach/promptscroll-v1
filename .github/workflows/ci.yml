@@ -50,5 +50,5 @@ jobs:
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 60
         env:
-          VITE_SUPABASE_URL: ${{ https://arpghjfkrracmvjzesln.supabase.com }}
+          VITE_SUPABASE_URL: ${{ https://jfxcvepfrixbwhpfuitj.supabase.co }}
           VITE_SUPABASE_ANON_KEY: ${{ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGdoamZrcnJhY212anplc2xuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTE1MzksImV4cCI6MjA2NjI2NzUzOX0.LButUVzKjUJP_6WKwrbAjehmVpVgQA9Wi-0CGkuKYno }} 

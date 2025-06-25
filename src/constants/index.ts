@@ -12,6 +12,7 @@ export const SUPABASE_TABLES = {
   CATEGORIES: 'categories',
   PROMPT_TAGS: 'prompt_tags',
   PROMPT_CATEGORIES: 'prompt_categories',
+  PROFILES: 'profiles',
 } as const;
 
 /* -------------------------------------------------------------------------- */
