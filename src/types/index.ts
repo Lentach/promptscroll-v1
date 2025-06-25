@@ -16,6 +16,8 @@ export interface Prompt {
   example_output: string | null;
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   author_name: string;
+  author_id?: string | null;
+  author_avatar_url?: string | null;
   created_at: string;
   updated_at: string;
   moderation_status: 'pending' | 'approved' | 'rejected';
@@ -27,6 +29,10 @@ export interface Prompt {
   prompt_tags?: {
     tag: string;
   }[];
+  public_profiles?: {
+    display_name: string;
+    avatar_url: string | null;
+  };
 }
 
 export interface Category {

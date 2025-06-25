@@ -206,6 +206,11 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const modelConfig = getAIModelIcon(prompt.primary_model);
   const ModelIcon = modelConfig.icon;
 
+  // Determine author display
+  const profile = prompt.public_profiles;
+  const authorName = profile?.display_name ?? prompt.author_name ?? 'Anonymous';
+  const authorAvatar = profile?.avatar_url ?? null;
+
   // Clear error after 5 seconds
   React.useEffect(() => {
     if (error) {
@@ -363,12 +368,30 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
                 {prompt.difficulty_level}
               </span>
               <span className="hidden sm:inline">•</span>
-              <span className="hidden sm:inline">by {prompt.author_name}</span>
+              <span className="hidden sm:inline flex items-center space-x-1">
+                {authorAvatar ? (
+                  <img src={authorAvatar} alt={authorName} className="w-4 h-4 rounded-full" />
+                ) : (
+                  <span className="w-4 h-4 rounded-full bg-purple-600 flex items-center justify-center text-[10px] text-white font-semibold">
+                    {authorName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span>{authorName}</span>
+              </span>
             </div>
 
             {/* Mobile-only author and quality with enhanced styling */}
             <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1 sm:hidden">
-              <span className="bg-white/5 rounded-full px-2 py-0.5">by {prompt.author_name}</span>
+              <span className="bg-white/5 rounded-full px-2 py-0.5 flex items-center space-x-1">
+                {authorAvatar ? (
+                  <img src={authorAvatar} alt={authorName} className="w-4 h-4 rounded-full" />
+                ) : (
+                  <span className="w-4 h-4 rounded-full bg-purple-600 flex items-center justify-center text-[10px] text-white font-semibold">
+                    {authorName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span>{authorName}</span>
+              </span>
             </div>
           </div>
         </div>

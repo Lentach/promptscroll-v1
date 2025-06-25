@@ -7,6 +7,7 @@ import { detectCategories } from '../utils/autoCategories';
 import { DIFFICULTY_LEVELS } from '../constants';
 import { promptSchema } from '../schemas';
 import type { PromptFormInput } from '../schemas';
+import { useUser } from '@/features/auth/hooks/useUser';
 
 interface AddPromptFormProps {
   isOpen: boolean;
@@ -180,6 +181,7 @@ const getAIModelIcon = (model: string) => {
 
 export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps) {
   const { categories } = useCategories();
+  const { user } = useUser();
   const [formData, setFormData] = useState<PromptFormInput>({
     title: '',
     content: '',
@@ -244,13 +246,15 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         .insert({
           title: formData.title.trim(),
           content: formData.content.trim(),
-          description: formData.description.trim() || null,
+          description: (formData.description ?? '').trim() || null,
           category_id: formData.category_ids[0],
           primary_model: formData.primary_model,
           difficulty_level: formData.difficulty_level,
-          author_name: formData.author_name.trim() || 'Anonymous',
-          technique_explanation: formData.technique_explanation.trim() || null,
-          example_output: formData.example_output.trim() || null,
+          author_id: user?.id ?? null,
+          author_name:
+            ((user?.user_metadata?.display_name as string | undefined) || formData.author_name?.trim() || 'Anonymous'),
+          technique_explanation: (formData.technique_explanation ?? '').trim() || null,
+          example_output: (formData.example_output ?? '').trim() || null,
           compatible_models: [formData.primary_model],
           moderation_status: 'approved', // Auto-approve for demo
           total_likes: 0,

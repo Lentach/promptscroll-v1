@@ -27,10 +27,13 @@ import { AddPromptForm } from './components/AddPromptForm';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import type { FilterState, Prompt, SortOption } from './types';
 import { TopPromptsProvider } from '@/features/prompts/hooks/useTopPrompts';
+import { AuthModal } from '@/features/auth/components/AuthModal';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 function App() {
   // UI State
   const [showAddPrompt, setShowAddPrompt] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [highlightedPromptId, setHighlightedPromptId] = useState<string | null>(null);
 
@@ -63,6 +66,8 @@ function App() {
     ...filters,
     search: debouncedSearch,
   });
+
+  const { isAuthenticated } = useAuth();
 
   // DODANY useEffect do przewijania do podświetlonego prompta
   useEffect(() => {
@@ -284,7 +289,13 @@ function App() {
 
                   {/* Add Prompt Button */}
                   <button
-                    onClick={() => setShowAddPrompt(true)}
+                    onClick={() => {
+                      if (isAuthenticated) {
+                        setShowAddPrompt(true);
+                      } else {
+                        setShowAuthModal(true);
+                      }
+                    }}
                     className="flex items-center space-x-1 sm:space-x-2 bg-gradient-to-r from-blue-500 to-purple-500 px-2 sm:px-4 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium text-white text-sm sm:text-base whitespace-nowrap"
                   >
                     <Plus className="h-4 w-4 flex-shrink-0" />
@@ -604,6 +615,7 @@ function App() {
             onClose={() => setShowAddPrompt(false)}
             onSuccess={handleAddPromptSuccess}
           />
+          <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
       </TopPromptsProvider>
     </ErrorBoundary>

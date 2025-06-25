@@ -78,6 +78,22 @@ From your Supabase project dashboard:
 - **Anon Key**: Found in Settings > API
 - **Service Role Key**: Found in Settings > API (keep secure!)
 
+### 5. Configure Auth Redirect URLs
+
+Supabase ➜ Authentication ➜ URL Configuration:
+
+| Setting | Value |
+|---------|-------|
+| Site URL | https://your-domain.vercel.app |
+| Additional Redirect URLs | https://your-domain.vercel.app/login,
+https://your-domain.vercel.app/register,
+https://your-domain.vercel.app/forgot-password,
+https://your-domain.vercel.app/verify-email |
+
+> ℹ️  If you also run a staging environment, add its domain(s) here as well (e.g. `https://promptscroll-staging.vercel.app`).
+
+Remember to **click "Save"** after updating. Changes take effect immediately.
+
 ## 🚀 Vercel Deployment
 
 ### 1. Connect Repository
