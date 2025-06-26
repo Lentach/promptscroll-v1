@@ -22,93 +22,47 @@
 
 # PromptScroll – Stage-3 Authentication Roadmap (Supabase)
 
-## Background & Motivation
-Building on the functional MVP, we are adding a full authentication layer so that users can register, log in, and manage their profiles.  Email + password must work day-one; Google / GitHub OAuth will improve adoption.  Auth is also a prerequisite for author attribution, collections, and admin tooling planned for the next milestones.
+## Background and Motivation (updated)
+The application must allow a signed-in user to add a new prompt.   
+Currently the `AddPromptForm` submission still fails with
+```
+POST …/rest/v1/prompts 409 (Conflict)
+code 23503 – Key is not present in table "profiles"
+```
+Therefore the foreign-key `author_id → profiles.id` is violated. Despite previous attempts to create the profile row and to relax RLS, the row is still missing or inaccessible when the `INSERT` happens.
 
-## Key Challenges
-1. Keep the current SPA UX fast – avoid long blocking redirects, preload session.
-2. Polish user-facing flows (sign-in/up/reset) while maintaining accessibility & a11y.
-3. Implement row-level security (RLS) so one user cannot read / mutate another's data.
-4. Integrate seamlessly with existing Prompt CRUD and future admin routes.
+## Key Challenges and Analysis (26 Jun 2025)
+1. **Race / Failure of profile upsert** — the `profiles` *upsert* placed right before the prompt insert may silently fail (RLS, validation, etc.). We never check `error` from that request, so the flow continues even on failure.
+2. **RLS on `public.profiles`** — an upsert translates to _INSERT … ON CONFLICT DO UPDATE_. That requires both INSERT and UPDATE policies. We added them, but need to verify they compiled and match the `auth.uid()` exactly.
+3. **Auth vs Supabase anon key** — The client might still be authenticated with `auth.uid()`, but PostgREST sees a JWT without `sub` → mismatch. Validate headers.
+4. **Existing conflicting row** — a stale row with same PK but different values could trigger 409 conflict during upsert → profile not written.
+5. **DB schema cache** — after adding the column, PostgREST cache may need `supabase db reset` or `REFRESH MATERIALIZED VIEW`.
+
+### Evidence to Gather
+- Inspect response of the `profiles` upsert (network & console) to confirm success / 409 / 401.
+- Check in SQL: `select id, display_name from public.profiles where id = '<current uid>';`
+- Confirm RLS policies exist via `select * from pg_policy where polrelid = 'public.profiles'::regclass;`
+- Verify auth JWT in devtools has correct `sub`.
 
 ## High-level Task Breakdown
-B1  Supabase backend
-  • B1.1 Enable Email/Password + OAuth providers (DONE)
-  • B1.2 Redirect URLs & ENV (DONE)
-  • B1.3 `profiles` table w/ RLS (DONE)
-B2  Environment / Libs
-  • B2.1 Add Supabase creds to `.env.local` (DONE)
-  • B2.2 Add OAuth client IDs (GitHub/Google)
-B3  Auth Context + Hooks
-  • B3.1 `AuthProvider` (DONE)
-  • B3.2 Core auth hooks (DONE)
-B4  UI Components
-  • B4.1 Forms: Login / Register / Reset (DONE)
-  • B4.2 `SocialAuthButtons` (DONE)
-  • B4.3 `AuthModal` (DONE)
-  • B4.4 `UserMenu` dropdown (DONE)
-B5  Routing & Guards (NEXT)
-  • B5.1 `ProtectedRoute` wrapper
-  • B5.2 Auth pages (`/login`, `/register`, `/forgot-password`, `/profile`)
-  • B5.3 `RequireAdmin` guard
-B6  Feature Integration
-  • B6.1 Tie prompt submission to current user
-  • B6.2 Show author avatar/name on `PromptCard`
-  • B6.3 Hide "Add Prompt" CTA for guests (show modal instead)
-B7  Email Templates & Verification
-  • B7.1 Customise Supabase email templates
-  • B7.2 `/verify-email` handler
-B8  Testing
-  • B8.1 Unit tests for `AuthProvider`
-  • B8.2 Cypress E2E for auth flows
-B9  Deployment
-  • B9.1 Add env vars to CI/CD secrets
-  • B9.2 Verify prod redirect URLs
+- [ ] **T1:** Instrument `AddPromptForm` to log and throw on `profiles` upsert error (success criteria: see explicit log with either `error=null` or printed details).
+- [ ] **T2:** Via SQL editor verify if row for current user exists; if not, manually insert one to unblock testing.
+- [ ] **T3:** If upsert fails with 409, investigate conflict cause; possibly switch to two-step `select` then `insert`.
+- [ ] **T4:** Ensure RLS policies for INSERT & UPDATE compile (no WITH CHECK on SELECT) and match `auth.uid() = id`.
+- [ ] **T5:** After profile row confirmed, test prompt insert; it should succeed (success criteria: POST /prompts returns 201 and UI shows toast success).
 
 ## Project Status Board
-```markdown
-- [x] B1.1 Providers enabled
-- [x] B1.2 Redirect URLs & ENV configured
-- [x] B1.3 Profiles table + RLS
-- [x] B2.1 Local env vars
-- [x] B2.2 OAuth client IDs
-- [x] B3.1 AuthProvider
-- [x] B3.2 Auth hooks
-- [x] B4.1 Forms
-- [x] B4.2 SocialAuthButtons
-- [x] B4.3 AuthModal
-- [x] B4.4 UserMenu
-- [x] B5.1 ProtectedRoute
-- [x] B5.2 Auth pages – basic pages & routing done 2025-06-25
-- [x] B5.3 RequireAdmin guard – done 2025-06-25
-- [x] B6.1 Prompt submission attribution – added author_id + name 2025-06-25
-- [x] B6.2 Author UI in PromptCard – avatar & name implemented 2025-06-25
-- [x] B6.3 Guest CTA behaviour – CTA opens AuthModal for guests 2025-06-25
-- [x] B7.1 Email templates
-- [x] B7.2 Verify-email handler – page & route implemented 2025-06-25
-- [x] B8.1 Unit tests
-- [x] B8.2 Cypress auth specs
-- [x] B9.1 CI/CD env vars
-- [x] B9.2 Prod redirect URLs
-```
+- [ ] T1 Instrument upsert error handling
+- [ ] T2 Verify profile row exists
+- [ ] T3 Investigate upsert 409 (if any)
+- [ ] T4 Validate RLS policies
+- [ ] T5 Final confirm prompt insert works
 
-## Current Status / Progress Tracking
-Latest completed: B9.2 Production redirect URLs doc (26-06-2025)
+## Executor's Feedback or Assistance Requests
+_None yet_
 
-Next up (Planner): review overall Stage-3 completion and close milestone.
-
-## Executor's Feedback / Assistance Requests
-### 2025-06-26 – B9.1 Completed
-Created `.github/workflows/ci.yml` that:
-• Installs deps, runs lint and unit tests.
-• Boots dev server and executes Cypress E2E in a separate job.
-• Injects `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` via repo secrets.
-
-Planner to double-check secrets exist in GitHub repo settings.
-
-## Lessons (Stage-3)
-• Use React Query's `isPending` instead of `isLoading` for mutation buttons (avoid undefined prop errors).
-• Remember Supabase session can be `null` after sign-up when email confirmation is enabled.
+## Lessons
+- Always check and log `error` from Supabase queries before proceeding to dependent operations.
 
 ## Planner Review – Stage-3 Authentication ✅ (2025-06-26)
 

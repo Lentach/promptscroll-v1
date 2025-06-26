@@ -240,6 +240,54 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         primary_model: formData.primary_model,
       });
 
+      // STEP 1: Ensure a profile row exists for current user (needed for author_id FK)
+      let profileEnsured = false;
+      if (user && user.id) {
+        const profilePayload = {
+          id: user.id,
+          display_name:
+            (user.user_metadata?.display_name as string | undefined) || formData.author_name?.trim() || 'Anonymous',
+          avatar_url: (user.user_metadata?.avatar_url as string | undefined) || null,
+        };
+
+        // Check if profile already exists
+        const { data: existingProfile, error: selectProfileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (selectProfileError) {
+          console.error('❌ Error selecting profile:', selectProfileError);
+          throw selectProfileError;
+        }
+
+        if (!existingProfile) {
+          const { error: insertProfileError } = await supabase.from('profiles').insert(profilePayload);
+          if (insertProfileError) {
+            console.error('❌ Error inserting profile:', insertProfileError);
+            throw insertProfileError;
+          } else {
+            profileEnsured = true;
+            console.log('✅ Profile inserted for user:', user.id);
+          }
+        } else {
+          // Optional: update display name / avatar if changed
+          const { error: updateProfileError } = await supabase
+            .from('profiles')
+            .update({ display_name: profilePayload.display_name, avatar_url: profilePayload.avatar_url })
+            .eq('id', user.id);
+
+          if (updateProfileError) {
+            console.error('❌ Error updating profile:', updateProfileError);
+            // Do not block prompt creation; continue
+          }
+        }
+      }
+
+      // Fallback: if profile could not be created, clear author_id to avoid FK violation
+      const safeAuthorId = profileEnsured ? user?.id ?? null : null;
+
       // Insert the prompt
       const { data: promptData, error: promptError } = await supabase
         .from('prompts')
@@ -250,9 +298,9 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
           category_id: formData.category_ids[0],
           primary_model: formData.primary_model,
           difficulty_level: formData.difficulty_level,
-          author_id: user?.id ?? null,
           author_name:
             ((user?.user_metadata?.display_name as string | undefined) || formData.author_name?.trim() || 'Anonymous'),
+          author_id: safeAuthorId,
           technique_explanation: (formData.technique_explanation ?? '').trim() || null,
           example_output: (formData.example_output ?? '').trim() || null,
           compatible_models: [formData.primary_model],

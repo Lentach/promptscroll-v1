@@ -133,7 +133,13 @@ export function PromptGrid({
             key={prompt.id}
             id={`prompt-${prompt.id}`}
             className={`transition-all duration-1000 ease-out ${highlightedPromptId === prompt.id ? 'ring-2 ring-blue-500 ring-opacity-50 bg-blue-500/5 rounded-3xl scale-105 shadow-2xl shadow-blue-500/20' : ''}`}
-            style={{ animationDelay: `${idx * 100}ms`, animation: 'fadeInUp 0.6s ease-out forwards' }}
+            style={{
+              animationName: 'fadeInUp',
+              animationDuration: '0.6s',
+              animationTimingFunction: 'ease-out',
+              animationFillMode: 'forwards',
+              animationDelay: `${idx * 100}ms`,
+            }}
           >
             <PromptCard
               prompt={prompt}
