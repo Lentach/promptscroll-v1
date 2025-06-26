@@ -14,6 +14,7 @@ import {
   X,
   Settings,
 } from 'lucide-react';
+import { AccountBar } from '@/features/auth/components/AccountBar';
 import { usePrompts } from '@/features/prompts/hooks/usePrompts';
 import { useCategories } from './hooks/useCategories';
 import { useInfiniteScroll } from './hooks/useInfiniteScroll';
@@ -306,6 +307,9 @@ function App() {
               </div>
             </div>
           </header>
+
+          {/* Account bar showing avatar + logout when authenticated */}
+          <AccountBar />
 
           {/* FIXED Mobile Settings Overlay - Higher z-index and proper positioning */}
           {showMobileFilters && (

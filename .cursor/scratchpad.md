@@ -93,4 +93,46 @@ These can roll into Stage-4.
 ### Recommendation
 Mark Stage-3 as **DONE** and proceed to Stage-4 "Prompt Discovery Enhancements" (improved search, infinite scrolling with React Query v5, performance optimisations).
 
+### 2025-06-26 – Planner: Authenticated UI Indicators & Post-Registration Flow
+
+#### Goal
+Enhance UX so that a signed-in user instantly sees their identity (avatar + display name) and has obvious logout access. After completing registration, a confirmation modal/toast should appear.
+
+#### Key Features to Add
+1. **User Menu / Avatar** – top-right (desktop) or bottom tab (mobile) shows circular avatar (or fallback initials) with dropdown:
+   • Profile (placeholder)
+   • Settings (future)
+   • Logout
+2. **Logout Action** – clears Supabase session and redirects to home or login page.
+3. **Registration Success Modal** – after successful `signUp`, show non-blocking modal/toast: "Account created! 
+
+#### High-level Task Breakdown (new)
+- [ ] **A1** Header refactor: inject `UserMenu` component when session present.
+    • Success: under header shows avatar + name; clicking opens dropdown.
+- [ ] **A2** Create `UserMenu` component.
+    • Shows displayName (if any), avatar.
+    • Contains Logout item (calls `supabase.auth.signOut()` and `queryClient.invalidate`).
+    • Success: clicking Logout returns to unauthenticated state and localStorage cleared.
+- [ ] **A3** Add fallback avatar generator (initials + bg color).
+    • Success: users w/o avatar_url still get pleasant circle.
+- [ ] **A4** Registration flow: in `useRegister` hook, after successful `signUp` set `showRegistrationSuccess` state.
+- [ ] **A5** New `RegistrationSuccessModal` (or Toast) component.
+    • Shown centrally; CTA "OK"/"Close".
+    • Auto-dismiss after 5s.
+- [ ] **A6** Unit tests: auth context updates, logout clears session, modal renders.
+
+#### Potential Extras (future backlog)
+• Profile page edit display_name + avatar upload.  
+• Persistent dark/light theme toggle stored per profile.
+
+#### Project Status Board (append)
+- [ ] A1 Header shows avatar when logged in
+- [ ] A2 Dropdown user menu with logout
+- [ ] A3 Fallback avatar
+- [ ] A4 Registration success state flag
+- [ ] A5 Success modal component
+- [ ] A6 Tests
+
+(planner done ‑ executor can pick A1 next)
+
 ---

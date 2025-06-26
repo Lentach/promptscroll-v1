@@ -8,9 +8,10 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
+  onRegistered?: () => void;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onRegistered }) => {
   const {
     register,
     handleSubmit,
@@ -29,6 +30,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         // Email confirmation flow: Supabase returns null session
         setConfirmationSent(true);
       }
+      if (onRegistered) onRegistered();
       if (onSuccess) onSuccess();
     } catch (err: any) {
       setFormError(err?.message || 'Registration failed');

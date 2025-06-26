@@ -45,7 +45,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onLoginClick }) => {
   }
 
   const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
-  const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email;
+  const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email ?? '';
+  const initial = displayName.length > 0 ? displayName.charAt(0).toUpperCase() : '?';
 
   return (
     <div className="relative" ref={menuRef}>
@@ -57,7 +58,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onLoginClick }) => {
           <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full" />
         ) : (
           <span className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-600 text-white text-sm font-semibold">
-            {displayName?.charAt(0).toUpperCase()}
+            {initial}
           </span>
         )}
         <ChevronDown size={16} className="text-gray-200" />
