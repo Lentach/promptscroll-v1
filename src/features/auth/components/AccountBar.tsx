@@ -2,23 +2,15 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from '../hooks/useUser';
 import { useLogout } from '../hooks/useLogout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ProfileModal } from './ProfileModal';
 
 export const AccountBar: React.FC = () => {
   const { user, loading } = useUser();
   const logout = useLogout();
-  const [open, setOpen] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // close on click outside
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  // close on click outside for bar not needed now
 
   if (loading) {
     return (
@@ -38,7 +30,7 @@ export const AccountBar: React.FC = () => {
     <div className="bg-slate-900/60 backdrop-blur-sm border-b border-white/10 w-full" ref={ref}>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3 text-sm text-gray-200">
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => setShowProfile(true)}
           className="flex items-center gap-2 focus:outline-none"
         >
           {avatarUrl ? (
@@ -53,19 +45,7 @@ export const AccountBar: React.FC = () => {
           </span>
         </button>
 
-        {open && (
-          <div className="absolute left-0 mt-2 bg-slate-800 border border-gray-700 rounded-md shadow-lg z-20 min-w-[150px]">
-            <button
-              onClick={() => {
-                setOpen(false);
-                logout.mutate();
-              }}
-              className="w-full px-4 py-2 text-left text-gray-200 hover:bg-slate-700 text-sm"
-            >
-              Logout
-            </button>
-          </div>
-        )}
+        <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
       </div>
     </div>
   );

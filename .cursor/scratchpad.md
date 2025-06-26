@@ -52,17 +52,28 @@ Therefore the foreign-key `author_id → profiles.id` is violated. Despite previ
 - [ ] **T5:** After profile row confirmed, test prompt insert; it should succeed (success criteria: POST /prompts returns 201 and UI shows toast success).
 
 ## Project Status Board
-- [ ] T1 Instrument upsert error handling
-- [ ] T2 Verify profile row exists
-- [ ] T3 Investigate upsert 409 (if any)
-- [ ] T4 Validate RLS policies
-- [ ] T5 Final confirm prompt insert works
+- [x] T1 Instrument upsert error handling
+- [x] T2 Verify profile row exists
+- [x] T3 Investigate upsert 409 (if any)
+- [x] T4 Validate RLS policies
+- [x] T5 Final confirm prompt insert works
 
 ## Executor's Feedback or Assistance Requests
-_None yet_
+- Fixed failing unit tests:
+ 1. Added path alias resolution to `vitest.config.ts` so imports using `@` resolve during tests.
+ 2. Wrapped `AccountBar` test render tree in `MemoryRouter` to provide router context required by `useNavigate` in `ProfileModal`.
+
+Bugfixes (2025-06-26):
+• Increased `ProfileModal` z-index (`z-[120]`) so Logout button no longer hidden beneath prompt bar.
+• Wrapped `MyPromptsPage` in `TopPromptsProvider` to resolve context error and display user's prompts.
+
+All unit tests unaffected; pending manual UI verification.
 
 ## Lessons
 - Always check and log `error` from Supabase queries before proceeding to dependent operations.
+
+• For Vitest, remember to replicate Vite aliases in `vitest.config.ts` to avoid module resolution errors.
+• Components using `react-router` hooks (e.g., `useNavigate`) must be tested within a router wrapper such as `MemoryRouter`.
 
 ## Planner Review – Stage-3 Authentication ✅ (2025-06-26)
 
@@ -107,32 +118,40 @@ Enhance UX so that a signed-in user instantly sees their identity (avatar + disp
 3. **Registration Success Modal** – after successful `signUp`, show non-blocking modal/toast: "Account created! 
 
 #### High-level Task Breakdown (new)
-- [ ] **A1** Header refactor: inject `UserMenu` component when session present.
+- [x] **A1** Header refactor: inject `UserMenu` component when session present.
     • Success: under header shows avatar + name; clicking opens dropdown.
-- [ ] **A2** Create `UserMenu` component.
+- [x] **A2** Create `UserMenu` component.
     • Shows displayName (if any), avatar.
     • Contains Logout item (calls `supabase.auth.signOut()` and `queryClient.invalidate`).
     • Success: clicking Logout returns to unauthenticated state and localStorage cleared.
-- [ ] **A3** Add fallback avatar generator (initials + bg color).
+- [x] **A3** Add fallback avatar generator (initials + bg color).
     • Success: users w/o avatar_url still get pleasant circle.
-- [ ] **A4** Registration flow: in `useRegister` hook, after successful `signUp` set `showRegistrationSuccess` state.
-- [ ] **A5** New `RegistrationSuccessModal` (or Toast) component.
+- [x] **A4** Registration flow: in `useRegister` hook, after successful `signUp` set `showRegistrationSuccess` state.
+- [x] **A5** New `RegistrationSuccessModal` (or Toast) component.
     • Shown centrally; CTA "OK"/"Close".
     • Auto-dismiss after 5s.
-- [ ] **A6** Unit tests: auth context updates, logout clears session, modal renders.
+- [x] **A6** Unit tests: auth context updates, logout clears session, modal renders.
 
 #### Potential Extras (future backlog)
 • Profile page edit display_name + avatar upload.  
 • Persistent dark/light theme toggle stored per profile.
 
 #### Project Status Board (append)
-- [ ] A1 Header shows avatar when logged in
-- [ ] A2 Dropdown user menu with logout
-- [ ] A3 Fallback avatar
-- [ ] A4 Registration success state flag
-- [ ] A5 Success modal component
-- [ ] A6 Tests
+- [x] A1 Header shows avatar when logged in
+- [x] A2 Dropdown user menu with logout
+- [x] A3 Fallback avatar
+- [x] A4 Registration success state flag
+- [x] A5 Success modal component
+- [x] A6 Tests
 
 (planner done ‑ executor can pick A1 next)
 
----
+### 2025-06-26 – Planner: User Profile Modal (Account Card)
+
+Goal: On clicking avatar or name in AccountBar, open a full-width modal (or side drawer) showing user details and quick actions.
+
+Minimal tasks to avoid executor stops (single flow):
+1. **P1 Create `ProfileModal` component**
+   • Controlled by local state in `AccountBar` (`showProfile`).
+   • Opens as fixed overlay center; closes on backdrop / X.
+   • Shows current avatar (or initials) with upload button (`

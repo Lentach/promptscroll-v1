@@ -10,6 +10,7 @@ import { AuthModal } from './features/auth/components/AuthModal';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { ProfilePage } from './pages/ProfilePage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
+import { MyPromptsPage } from './pages/MyPromptsPage';
 
 // Create a single QueryClient instance for the whole app
 const queryClient = new QueryClient();
@@ -38,6 +39,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               }
             />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route
+              path="/my-prompts"
+              element={
+                <ProtectedRoute>
+                  <MyPromptsPage />
+                </ProtectedRoute>
+              }
+            />
             {/* Profile route protected will be added later */}
           </Routes>
         </BrowserRouter>
