@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import { useLogout } from '../hooks/useLogout';
 import { createPortal } from 'react-dom';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const { user } = useUser();
   const logout = useLogout();
   const [promptCount, setPromptCount] = useState<number | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!user || !isOpen) return;
@@ -26,6 +29,58 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       if (typeof count === 'number') setPromptCount(count);
     })();
   }, [user, isOpen]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (<5MB) and type
+    if (!/^image\/(png|jpe?g|gif)$/i.test(file.type)) {
+      alert('Please select PNG, JPG or GIF image');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be under 5MB');
+      return;
+    }
+
+    // Preview
+    setPreviewUrl(URL.createObjectURL(file));
+
+    // Upload
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user!.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const publicUrl = data.publicUrl;
+
+      // Update profile row
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user!.id);
+      if (updateError) throw updateError;
+
+      // Update user metadata for immediate UI update
+      await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+
+      // Refresh page context
+      alert('Avatar updated!');
+      window.location.reload();
+    } catch (err: any) {
+      console.error('Avatar upload failed', err);
+      alert(`Failed to upload avatar: ${err.message ?? err}`);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (!isOpen || !user) return null;
 
@@ -73,7 +128,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
 
             <label className="flex items-center gap-1.5 text-xs text-blue-400 cursor-pointer hover:underline">
               <ImageIcon size={14} /> Change avatar
-              <input type="file" className="hidden" onChange={() => alert('TODO: upload avatar')} />
+              <input type="file" className="hidden" onChange={handleFileChange} />
             </label>
 
             <h3 className="text-xl font-semibold text-white truncate max-w-[220px] text-center">
