@@ -18,9 +18,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const [promptCount, setPromptCount] = useState<number | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  // Dodajemy lokalny state dla avatar URL
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || !isOpen) return;
+    
+    // Ustaw początkowy avatar URL
+    setCurrentAvatarUrl((user.user_metadata?.avatar_url as string | undefined) ?? null);
+    
     (async () => {
       const { count } = await supabase
         .from('prompts')
@@ -36,18 +42,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
 
     // Validate size (<5MB) and type
     if (!/^image\/(png|jpe?g|gif)$/i.test(file.type)) {
-      alert('Please select PNG, JPG or GIF image');
+      // Użyj console.error zamiast alert
+      console.error('Please select PNG, JPG or GIF image');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image must be under 5MB');
+      console.error('Image must be under 5MB');
       return;
     }
 
-    // Preview
-    setPreviewUrl(URL.createObjectURL(file));
+    // Natychmiastowy podgląd - ustaw lokalny state
+    const immediatePreview = URL.createObjectURL(file);
+    setCurrentAvatarUrl(immediatePreview);
+    setPreviewUrl(immediatePreview);
 
-    // Upload
+    // Upload w tle
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
@@ -71,12 +80,27 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
       // Update user metadata for immediate UI update
       await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
 
-      // Refresh page context
-      alert('Avatar updated!');
-      window.location.reload();
+      // Zaktualizuj lokalny state z finalnym URL
+      setCurrentAvatarUrl(publicUrl);
+      
+      // Wyczyść temporary preview URL
+      if (immediatePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(immediatePreview);
+      }
+      setPreviewUrl(null);
+
+      // USUŃ te linijki - nie ma alertu ani przeładowania!
+      // alert('Avatar updated!');
+      // window.location.reload();
+
     } catch (err: any) {
       console.error('Avatar upload failed', err);
-      alert(`Failed to upload avatar: ${err.message ?? err}`);
+      // W przypadku błędu przywróć poprzedni avatar
+      setCurrentAvatarUrl((user.user_metadata?.avatar_url as string | undefined) ?? null);
+      setPreviewUrl(null);
+      
+      // Opcjonalnie możesz pokazać dyskretny toast zamiast alert
+      // showToast(`Failed to upload avatar: ${err.message ?? err}`);
     } finally {
       setUploading(false);
     }
@@ -84,7 +108,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
 
   if (!isOpen || !user) return null;
 
-  const avatarUrl = (user.user_metadata?.avatar_url as string | undefined) ?? null;
+  // Użyj lokalnego state zamiast user.user_metadata
+  const avatarUrl = currentAvatarUrl;
   const displayName = (user.user_metadata?.display_name as string | undefined) ?? user.email ?? '';
   const initial = displayName.charAt(0).toUpperCase();
 
@@ -115,20 +140,33 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           {/* Avatar & basic info */}
           <div className="flex flex-col items-center gap-2">
             {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="avatar"
-                className="w-24 h-24 rounded-full object-cover ring-2 ring-purple-500 shadow-md"
-              />
+              <div className="relative">
+                <img
+                  src={avatarUrl}
+                  alt="avatar"
+                  className="w-24 h-24 rounded-full object-cover ring-2 ring-purple-500 shadow-md"
+                />
+                {uploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                    <LoadingSpinner size="sm" />
+                  </div>
+                )}
+              </div>
             ) : (
               <span className="w-24 h-24 flex items-center justify-center rounded-full bg-purple-600 text-white text-4xl font-semibold shadow-md">
                 {initial}
               </span>
             )}
 
-            <label className="flex items-center gap-1.5 text-xs text-blue-400 cursor-pointer hover:underline">
-              <ImageIcon size={14} /> Change avatar
-              <input type="file" className="hidden" onChange={handleFileChange} />
+            <label className={`flex items-center gap-1.5 text-xs text-blue-400 cursor-pointer hover:underline ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+              <ImageIcon size={14} /> {uploading ? 'Uploading...' : 'Change avatar'}
+              <input 
+                type="file" 
+                className="hidden" 
+                onChange={handleFileChange}
+                disabled={uploading}
+                accept="image/png,image/jpeg,image/jpg,image/gif"
+              />
             </label>
 
             <h3 className="text-xl font-semibold text-white truncate max-w-[220px] text-center">
@@ -154,7 +192,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           {/* Actions */}
           <div className="flex flex-col gap-3">
             <Link
-              to="/my-prompts"
+              to="/profile?modal=my-prompts"
               onClick={onClose}
               className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-700 py-2 text-white transition-colors"
             >
@@ -177,4 +215,4 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   );
 
   return createPortal(modalContent, document.body);
-}; 
+};
