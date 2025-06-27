@@ -7,7 +7,6 @@ export const promptSchema = z.object({
   category_ids: z.array(z.string()).min(0),
   primary_model: z.string(),
   difficulty_level: z.enum(['beginner', 'intermediate', 'advanced']),
-  author_name: z.string().max(100).optional(),
   technique_explanation: z.string().optional(),
   example_output: z.string().optional(),
 });

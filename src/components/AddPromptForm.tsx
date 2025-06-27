@@ -189,7 +189,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
     category_ids: [],
     primary_model: 'chatgpt',
     difficulty_level: 'beginner',
-    author_name: '',
     technique_explanation: '',
     example_output: '',
   });
@@ -246,7 +245,7 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         const profilePayload = {
           id: user.id,
           display_name:
-            (user.user_metadata?.display_name as string | undefined) || formData.author_name?.trim() || 'Anonymous',
+            (user.user_metadata?.display_name as string | undefined) || 'Anonymous',
           avatar_url: (user.user_metadata?.avatar_url as string | undefined) || null,
         };
 
@@ -298,9 +297,8 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
           category_id: formData.category_ids[0],
           primary_model: formData.primary_model,
           difficulty_level: formData.difficulty_level,
-          author_name:
-            ((user?.user_metadata?.display_name as string | undefined) || formData.author_name?.trim() || 'Anonymous'),
-          author_id: safeAuthorId,
+          author_name: (user?.user_metadata?.display_name as string | undefined) || 'Anonymous',
+          author_id: user?.id ?? null,
           technique_explanation: (formData.technique_explanation ?? '').trim() || null,
           example_output: (formData.example_output ?? '').trim() || null,
           compatible_models: [formData.primary_model],
@@ -396,7 +394,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
         category_ids: [],
         primary_model: 'chatgpt',
         difficulty_level: 'beginner',
-        author_name: '',
         technique_explanation: '',
         example_output: '',
       });
@@ -623,18 +620,6 @@ export function AddPromptForm({ isOpen, onClose, onSuccess }: AddPromptFormProps
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* Author Name */}
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">Your Name</label>
-                  <input
-                    type="text"
-                    value={formData.author_name}
-                    onChange={(e) => handleChange('author_name', e.target.value)}
-                    placeholder="Anonymous"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors text-white placeholder-gray-400"
-                  />
                 </div>
               </div>
 

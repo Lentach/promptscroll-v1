@@ -14,6 +14,7 @@ import {
   Loader,
   Check,
 } from 'lucide-react';
+import { Avatar } from '@/components/Avatar';
 
 import { useTopPrompts } from '../hooks/useTopPrompts';
 import type { Prompt } from '@/types';
@@ -206,10 +207,10 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const modelConfig = getAIModelIcon(prompt.primary_model);
   const ModelIcon = modelConfig.icon;
 
-  // Determine author display
+  // Prefer profile join data > direct prompt columns as fallback
   const profile = (prompt as any).profiles ?? (prompt as any).public_profiles;
   const authorName = profile?.display_name ?? prompt.author_name ?? 'Anonymous';
-  const authorAvatar = profile?.avatar_url ?? null;
+  const authorAvatar = profile?.avatar_url ?? prompt.author_avatar_url ?? null;
 
   // Clear error after 5 seconds
   React.useEffect(() => {
@@ -314,6 +315,9 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
             />
           </div>
 
+          {/* Author avatar – now larger & visually enhanced */}
+          <Avatar src={authorAvatar} name={authorName} size={40} className="flex-shrink-0" />
+
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2 flex-wrap min-w-0 flex-1">
@@ -366,31 +370,6 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
                 className={`capitalize ${DIFFICULTY_COLOR_MAP[prompt.difficulty_level]} font-medium`}
               >
                 {prompt.difficulty_level}
-              </span>
-              <span className="hidden sm:inline">•</span>
-              <span className="hidden sm:inline flex items-center space-x-1">
-                {authorAvatar ? (
-                  <img src={authorAvatar} alt={authorName} className="w-4 h-4 rounded-full" />
-                ) : (
-                  <span className="w-4 h-4 rounded-full bg-purple-600 flex items-center justify-center text-[10px] text-white font-semibold">
-                    {authorName.charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <span>{authorName}</span>
-              </span>
-            </div>
-
-            {/* Mobile-only author and quality with enhanced styling */}
-            <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1 sm:hidden">
-              <span className="bg-white/5 rounded-full px-2 py-0.5 flex items-center space-x-1">
-                {authorAvatar ? (
-                  <img src={authorAvatar} alt={authorName} className="w-4 h-4 rounded-full" />
-                ) : (
-                  <span className="w-4 h-4 rounded-full bg-purple-600 flex items-center justify-center text-[10px] text-white font-semibold">
-                    {authorName.charAt(0).toUpperCase()}
-                  </span>
-                )}
-                <span>{authorName}</span>
               </span>
             </div>
           </div>

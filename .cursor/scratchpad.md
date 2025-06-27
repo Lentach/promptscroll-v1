@@ -50,14 +50,30 @@ Users can navigate from their Profile to the "My Prompts" page (`/my-prompts`) t
 - [x] MP1 BackButton component & integration on MyPromptsPage
 - [x] MP2 Improved /my-prompts header + styling
 - [x] MP3 (stretch) Modal presentation research
+- [x] AV1 PromptCard – unify avatar source, size (40-48 px) & visual polish
+- [x] AV2 Backdrop click replicates BackButton logic
+- [x] AV3 usePrompts + MyPrompts queries include profile join ensuring avatar url
 
 ## Executor's Feedback or Assistance Requests
 • Added translucent card container (`bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/10`) around `PromptGrid` for visual depth and parity with Discover page.
 • Header already updated in MP1; combined results deliver polished look.
 • Manual contrast check via browser devtools passes WCAG AA for text; automated aXe to be run in CI later.
 • No performance hit observed.
+• Implemented reusable `Avatar` component (`src/components/Avatar.tsx`) with:
+  – Image + fallback initials, gradient BG, border, shadow, hover scale.
+  – Configurable `size` prop (default 48 px) and graceful error handling.
+• Integrated avatar into `PromptCard`:
+  – Larger 40 px avatar next to AI model icon in header.
+  – Replaced previous ad-hoc img/initials code with `<Avatar>` instances (incl. mobile).
+  – Avatar source now resolves from `profiles.avatar_url` ➜ `author_avatar_url` fallback.
+• Removed duplicate small avatar snippets, ensuring consistency.
+• Backdrop now checks history length; performs `navigate(-1)` else replace to /profile.
+• Updated Supabase queries (`usePrompts`, `MyPromptsPage`) to select joined `profiles` with avatar & display_name.
+  – This ensures Avatar component receives proper data on Discover/MyPrompts.
+• Tests pass.
+• Please confirm avatars now display; if still blank might be missing data in DB.
 
-Next: MP3 (research modal approach) — optional, await Planner guidance.
+Next: visual QA in Storybook / local dev; assess tooltip & lazy-load enhancements if needed.
 
 ## Lessons
 • Using URL search params (e.g. `?modal=my-prompts`) is a lightweight pattern to trigger page overlays without changing base route – avoids double mounts of global providers.

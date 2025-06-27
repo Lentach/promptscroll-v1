@@ -23,7 +23,13 @@ export const ProfilePage: React.FC = () => {
       {showMyPromptsModal && (
         <Modal
           isOpen
-          onClose={() => navigate('/profile', { replace: true })}
+          onClose={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate('/profile', { replace: true });
+            }
+          }}
           contentClassName="w-full max-w-4xl p-6"
         >
           <MyPromptsPage />

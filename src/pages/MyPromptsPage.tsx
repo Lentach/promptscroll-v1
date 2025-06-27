@@ -14,7 +14,9 @@ export const MyPromptsPage: React.FC = () => {
     () =>
       supabase
         .from('prompts')
-        .select('*')
+        .select(
+          `*, profiles:profiles!prompts_author_id_fkey (display_name, avatar_url)`
+        )
         .eq('author_id', user?.id ?? '')
         .order('created_at', { ascending: false })
         .then(({ data, error }) => ({ data, error })) as unknown as Promise<{ data: any[] | null; error: any }>,
