@@ -53,6 +53,7 @@ Users can navigate from their Profile to the "My Prompts" page (`/my-prompts`) t
 - [x] AV1 PromptCard – unify avatar source, size (40-48 px) & visual polish
 - [x] AV2 Backdrop click replicates BackButton logic
 - [x] AV3 usePrompts + MyPrompts queries include profile join ensuring avatar url
+- [x] AV4 Ensure avatars visible for logged-out users (fetch from public_profiles view)
 
 ## Executor's Feedback or Assistance Requests
 • Added translucent card container (`bg-white/5 backdrop-blur-xl rounded-3xl p-6 border border-white/10`) around `PromptGrid` for visual depth and parity with Discover page.
@@ -72,6 +73,7 @@ Users can navigate from their Profile to the "My Prompts" page (`/my-prompts`) t
   – This ensures Avatar component receives proper data on Discover/MyPrompts.
 • Tests pass.
 • Please confirm avatars now display; if still blank might be missing data in DB.
+• Implemented fallback fetch in `PromptCard` – when avatar/name missing it queries `public_profiles` view using `author_id` once per card.  This bypasses RLS restrictions and restores avatars for anonymous sessions.  No schema changes required; minimal client-side overhead.
 
 Next: visual QA in Storybook / local dev; assess tooltip & lazy-load enhancements if needed.
 

@@ -15,6 +15,7 @@ import {
   Check,
 } from 'lucide-react';
 import { Avatar } from '@/components/Avatar';
+import { supabase } from '@/lib/supabase';
 
 import { useTopPrompts } from '../hooks/useTopPrompts';
 import type { Prompt } from '@/types';
@@ -209,8 +210,38 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
 
   // Prefer profile join data > direct prompt columns as fallback
   const profile = (prompt as any).profiles ?? (prompt as any).public_profiles;
-  const authorName = profile?.display_name ?? prompt.author_name ?? 'Anonymous';
-  const authorAvatar = profile?.avatar_url ?? prompt.author_avatar_url ?? null;
+  const initialAuthorName = profile?.display_name ?? prompt.author_name ?? '';
+  const initialAuthorAvatar = profile?.avatar_url ?? prompt.author_avatar_url ?? null;
+
+  // Local state for author info so we can update when fetched from public_profiles
+  const [authorInfo, setAuthorInfo] = React.useState<{ name: string; avatar: string | null }>({
+    name: initialAuthorName || 'Anonymous',
+    avatar: initialAuthorAvatar,
+  });
+
+  // Fetch author info from public_profiles **only** if we don't already have it (e.g. when user is logged-out and RLS hides profiles)
+  React.useEffect(() => {
+    // If we already have both name & avatar we can skip the extra request
+    if ((authorInfo.avatar && authorInfo.name && authorInfo.name !== 'Anonymous') || !prompt.author_id) return;
+
+    (async () => {
+      const { data: pubData, error: pubError } = await supabase
+        .from('public_profiles')
+        .select('display_name, avatar_url')
+        .eq('id', prompt.author_id as string)
+        .maybeSingle();
+
+      if (!pubError && pubData) {
+        setAuthorInfo({ name: pubData.display_name || 'Anonymous', avatar: pubData.avatar_url });
+      }
+    })();
+    // We purposely disable exhaustive-deps for this effect because we only want it to run once per card
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Alias for easier usage in JSX
+  const authorName = authorInfo.name;
+  const authorAvatar = authorInfo.avatar;
 
   // Clear error after 5 seconds
   React.useEffect(() => {
