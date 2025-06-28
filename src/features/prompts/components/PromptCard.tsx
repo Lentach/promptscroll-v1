@@ -294,6 +294,17 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
     }
   }, [copyStatus, isLoading, prompt.id, prompt.content, usesCount, copyPrompt]);
 
+  // Determine verified status: any author registered more than 3 days ago
+  const isVerified = React.useMemo(() => {
+    if (profile?.created_at) {
+      const created = new Date(profile.created_at);
+      const now = new Date();
+      const diffDays = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays >= 3;
+    }
+    return false;
+  }, [profile?.created_at]);
+
   return (
     <div
       className={`
@@ -356,7 +367,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
                   {prompt.title}
                 </h3>
                 <div className="flex items-center space-x-1 flex-shrink-0">
-                  {prompt.is_verified && (
+                  {isVerified && (
                     <div className="relative">
                       <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-green-400 animate-pulse" />
                       <div className="absolute inset-0 h-3 w-3 sm:h-4 sm:w-4 text-green-400 animate-ping opacity-20" />
@@ -422,7 +433,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
         {/* Copy button */}
         <button
           onClick={handleCopy}
-          className={`absolute top-2 right-2 p-2 rounded-lg backdrop-blur-md transition-all ${getCopyButtonStyle()}`}
+          className={`absolute top-2 right-2 p-2 rounded-lg backdrop-blur-md transition-all z-20 ${getCopyButtonStyle()}`}
           title="Copy prompt"
         >
           {getCopyButtonIcon()}

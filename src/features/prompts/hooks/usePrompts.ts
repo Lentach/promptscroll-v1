@@ -31,7 +31,8 @@ export function usePrompts(options?: FilterState & { limit?: number }) {
         ),
         profiles:profiles!prompts_author_id_fkey (
           display_name,
-          avatar_url
+          avatar_url,
+          created_at
         )
       `,
     );

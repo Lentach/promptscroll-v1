@@ -93,7 +93,7 @@ export function ActionBar({
     const modelConfig = {
       chatgpt: { color: 'from-green-500 via-emerald-500 to-teal-500', glow: 'shadow-green-500/25' },
       'gpt-4': { color: 'from-purple-500 via-blue-500 to-green-500', glow: 'shadow-purple-500/25' },
-      claude: { color: 'from-violet-500 via-fuchsia-500 to-pink-500', glow: 'shadow-violet-500/25' },
+      claude: { color: 'from-orange-600 via-orange-500 to-amber-400', glow: 'shadow-orange-500/25' },
       dalle: { color: 'from-orange-500 via-red-500 to-pink-500', glow: 'shadow-orange-500/25' },
       midjourney: { color: 'from-pink-500 via-rose-500 to-purple-500', glow: 'shadow-pink-500/25' },
       gemini: { color: 'from-blue-500 via-cyan-500 to-indigo-500', glow: 'shadow-blue-500/25' },

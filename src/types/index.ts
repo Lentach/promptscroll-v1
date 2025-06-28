@@ -32,6 +32,7 @@ export interface Prompt {
   profiles?: {
     display_name: string;
     avatar_url: string | null;
+    created_at?: string;
   };
 }
 
