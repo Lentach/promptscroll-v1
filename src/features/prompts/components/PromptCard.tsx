@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Avatar } from '@/components/Avatar';
 import { supabase } from '@/lib/supabase';
+import { AuthorCardModal } from '@/features/follow/components/AuthorCardModal';
 
 import { useTopPrompts } from '../hooks/useTopPrompts';
 import type { Prompt } from '@/types';
@@ -203,6 +204,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
   const [isHovered, setIsHovered] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied'>('idle');
+  const [showAuthorModal, setShowAuthorModal] = useState(false);
 
   // Get AI model configuration
   const modelConfig = getAIModelIcon(prompt.primary_model);
@@ -358,7 +360,9 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
           </div>
 
           {/* Author avatar – now larger & visually enhanced */}
-          <Avatar src={authorAvatar} name={authorName} size={40} className="flex-shrink-0" />
+          <button onClick={() => setShowAuthorModal(true)} className="flex-shrink-0 focus:outline-none">
+            <Avatar src={authorAvatar} name={authorName} size={40} className="pointer-events-none" />
+          </button>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
@@ -553,6 +557,17 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
         onUpdate={onUpdate}
         setError={setError}
       />
+
+      {/* Author small modal */}
+      {prompt.author_id && (
+        <AuthorCardModal
+          userId={prompt.author_id}
+          displayName={authorName}
+          avatarUrl={authorAvatar}
+          isOpen={showAuthorModal}
+          onClose={() => setShowAuthorModal(false)}
+        />
+      )}
     </div>
   );
 } 

@@ -88,3 +88,10 @@ export interface AppState {
     highlightedPromptId: string | null;
   };
 }
+
+// Social Follow system
+export interface Follow {
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+}
