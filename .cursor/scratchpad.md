@@ -61,7 +61,7 @@ The platform currently lacks social interaction between users beyond voting on p
 - [x] FS6 ProfileModal update ✅
 - [x] FS7 FollowListModal component ✅
 - [x] FS8 FollowButton component ✅
-- [ ] FS9 Tests (unit + e2e)
+- [ ] FS9 Tests (unit + e2e) ⏳
 - [ ] FS10 Docs & Readme update
 
 ## Executor's Feedback or Assistance Requests (Follow System)
@@ -72,4 +72,6 @@ The platform currently lacks social interaction between users beyond voting on p
 
 • FollowButton improvements: cannot follow self, shows "Following" when active.
 • Avatar tooltip restored by removing pointer-events-none.
+
+• Fixed empty lists in FollowListModal: changed Supabase join to use `public_profiles` view instead of `profiles` table (RLS blocked anon reads). Verified followers/following now display correctly.
 

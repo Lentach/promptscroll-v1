@@ -200,7 +200,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         </div>
       </div>
 
-      {/* @ts-expect-error user is non-null inside modal */}
       <FollowListModal
         userId={userId}
         type={listType as any}

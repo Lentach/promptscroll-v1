@@ -20,9 +20,13 @@ export const FollowListModal: React.FC<FollowListModalProps> = ({ userId, type, 
     const query = supabase
       .from('follows')
       .select(
+        // Use the publicly readable view instead of the base table so that
+        // even anonymous users (or users without extra permissions) can
+        // retrieve basic profile information. The foreign-key joins still work
+        // because the column names are identical.
         type === 'followers'
-          ? 'follower_id, profiles:profiles!follows_follower_id_fkey(id, display_name, avatar_url)'
-          : 'following_id, profiles:profiles!follows_following_id_fkey(id, display_name, avatar_url)'
+          ? 'follower_id, profile:public_profiles!follows_follower_id_fkey(id, display_name, avatar_url)'
+          : 'following_id, profile:public_profiles!follows_following_id_fkey(id, display_name, avatar_url)'
       )
       .order('created_at', { ascending: false })
       .range(pageParam, pageParam + PAGE_SIZE - 1)
@@ -82,7 +86,8 @@ export const FollowListModal: React.FC<FollowListModalProps> = ({ userId, type, 
           {list.length === 0 && status === 'success' && <p className="text-center text-gray-400">No {title.toLowerCase()} yet.</p>}
           <ul className="space-y-3">
             {list.map((row: any) => {
-              const profile = row.profiles;
+              let profile = row.profile;
+              if (Array.isArray(profile)) profile = profile[0];
               if (!profile) return null;
               return (
                 <li key={profile.id}>
