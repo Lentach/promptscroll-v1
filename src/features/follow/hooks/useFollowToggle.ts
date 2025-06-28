@@ -40,11 +40,22 @@ export const useFollowToggle = ({ targetUserId }: Params) => {
         return { followed: true };
       }
     },
-    onSuccess: () => {
-      // Invalidate relevant queries
+    onMutate: async () => {
+      // cancel ongoing
+      await queryClient.cancelQueries({ queryKey: ['follow-status', user?.id, targetUserId] });
+      const prev = queryClient.getQueryData<boolean>(['follow-status', user?.id, targetUserId]);
+      queryClient.setQueryData(['follow-status', user?.id, targetUserId], !(prev ?? false));
+      return { prev };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prev !== undefined) {
+        queryClient.setQueryData(['follow-status', user?.id, targetUserId], context.prev);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['follow-status', user?.id, targetUserId] });
       queryClient.invalidateQueries({ queryKey: ['follower-counts', targetUserId] });
       queryClient.invalidateQueries({ queryKey: ['follower-counts', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['follow-status', user?.id, targetUserId] });
     },
   });
 }; 

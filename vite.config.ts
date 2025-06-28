@@ -8,6 +8,10 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    watch: {
+      usePolling: true,  // wymusza odpytywanie plików (pomaga pod WSL / sieci)
+      interval: 100,     // co 100 ms
+    },
   },
   build: {
     outDir: 'dist',

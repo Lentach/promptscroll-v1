@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, UserCircle, Image as ImageIcon, LogOut, FileText, Users } from 'lucide-react';
+import { X, UserCircle, Image as ImageIcon, LogOut, FileText, Users, Brain } from 'lucide-react';
 import { useUser } from '../hooks/useUser';
 import { supabase } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
@@ -25,6 +25,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const followers = followerCounts?.followers ?? null;
   const following = followerCounts?.following ?? null;
   const [listType, setListType] = useState<'followers' | 'following' | null>(null);
+
+  const userId = user.id; // non-null after guard
 
   useEffect(() => {
     if (!user || !isOpen) return;
@@ -157,16 +159,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-slate-700/60 rounded-md p-3 flex flex-col items-center">
-              <FileText className="text-blue-400 mb-1" size={20} />
+            <Link
+              to="/my-prompts"
+              className="bg-slate-700/60 rounded-md p-3 flex flex-col items-center hover:bg-slate-600/60 transition-colors"
+              onClick={onClose}
+            >
+              <Brain className="text-blue-400 mb-1 animate-pulse" size={20} />
               <span className="text-lg font-medium text-white">{promptCount ?? '…'}</span>
-              <span className="text-xs text-gray-400">Prompts</span>
-            </div>
+              <span className="text-xs text-gray-400">My Prompts</span>
+            </Link>
             <button
               className="bg-slate-700/60 rounded-md p-3 flex flex-col items-center hover:bg-slate-600/60 transition-colors"
               onClick={() => setListType('followers')}
             >
-              <Users className="text-green-400 mb-1" size={20} />
+              <Users className="text-green-400 mb-1 animate-pulse" size={20} />
               <span className="text-lg font-medium text-white">{followers ?? '…'}</span>
               <span className="text-xs text-gray-400">Followers</span>
             </button>
@@ -174,21 +180,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               className="bg-slate-700/60 rounded-md p-3 flex flex-col items-center hover:bg-slate-600/60 transition-colors"
               onClick={() => setListType('following')}
             >
-              <UserCircle className="text-yellow-400 mb-1" size={20} />
+              <UserCircle className="text-yellow-400 mb-1 animate-pulse" size={20} />
               <span className="text-lg font-medium text-white">{following ?? '…'}</span>
               <span className="text-xs text-gray-400">Following</span>
             </button>
           </div>
 
           <div className="flex flex-col gap-3">
-            <Link
-              to="/profile?modal=my-prompts"
-              onClick={onClose}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 hover:bg-blue-700 py-2 text-white transition-colors"
-            >
-              <FileText size={16} /> View My Prompts
-            </Link>
-
             <button
               onClick={() => {
                 logout.mutate();
@@ -202,8 +200,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         </div>
       </div>
 
+      {/* @ts-expect-error user is non-null inside modal */}
       <FollowListModal
-        userId={user!.id}
+        userId={userId}
         type={listType as any}
         isOpen={listType !== null}
         onClose={() => setListType(null)}

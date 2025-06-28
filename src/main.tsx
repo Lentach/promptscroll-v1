@@ -11,6 +11,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import { ProfilePage } from './pages/ProfilePage';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { MyPromptsPage } from './pages/MyPromptsPage';
+import { UserPromptsPage } from './pages/UserPromptsPage';
 
 // Create a single QueryClient instance for the whole app
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 </ProtectedRoute>
               }
             />
+            <Route path="/user/:userId/prompts" element={<UserPromptsPage />} />
             {/* Profile route protected will be added later */}
           </Routes>
         </BrowserRouter>

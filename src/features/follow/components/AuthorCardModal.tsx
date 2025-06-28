@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useFollowerCounts } from '@/features/follow/hooks/useFollowerCounts';
 import { FollowButton } from '@/features/follow/components/FollowButton';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { Link } from 'react-router-dom';
 
 interface AuthorCardModalProps {
   userId: string;
@@ -46,7 +47,16 @@ export const AuthorCardModal: React.FC<AuthorCardModalProps> = ({ userId, displa
               Following
             </div>
           </div>
-          <FollowButton targetUserId={userId} />
+          <div className="flex flex-col gap-2 items-center">
+            <FollowButton targetUserId={userId} />
+            <Link
+              to={`/user/${userId}/prompts`}
+              className="text-sm text-blue-400 hover:underline"
+              onClick={onClose}
+            >
+              View Prompts
+            </Link>
+          </div>
         </div>
       </div>
     </div>

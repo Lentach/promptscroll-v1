@@ -361,7 +361,7 @@ export function PromptCard({ prompt, isTopPrompt = false, onUpdate, onTagClick }
 
           {/* Author avatar – now larger & visually enhanced */}
           <button onClick={() => setShowAuthorModal(true)} className="flex-shrink-0 focus:outline-none">
-            <Avatar src={authorAvatar} name={authorName} size={40} className="pointer-events-none" />
+            <Avatar src={authorAvatar} name={authorName} size={40} />
           </button>
 
           <div className="flex-1 min-w-0">

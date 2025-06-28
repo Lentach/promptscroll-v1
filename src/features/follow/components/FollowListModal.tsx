@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 
 interface FollowListModalProps {
   userId: string;
@@ -20,8 +21,8 @@ export const FollowListModal: React.FC<FollowListModalProps> = ({ userId, type, 
       .from('follows')
       .select(
         type === 'followers'
-          ? 'follower_id, profiles:follower_id(display_name, avatar_url)'
-          : 'following_id, profiles:following_id(display_name, avatar_url)'
+          ? 'follower_id, profiles:profiles!follows_follower_id_fkey(id, display_name, avatar_url)'
+          : 'following_id, profiles:profiles!follows_following_id_fkey(id, display_name, avatar_url)'
       )
       .order('created_at', { ascending: false })
       .range(pageParam, pageParam + PAGE_SIZE - 1)
@@ -81,18 +82,24 @@ export const FollowListModal: React.FC<FollowListModalProps> = ({ userId, type, 
           {list.length === 0 && status === 'success' && <p className="text-center text-gray-400">No {title.toLowerCase()} yet.</p>}
           <ul className="space-y-3">
             {list.map((row: any) => {
-              const profile = type === 'followers' ? row.profiles : row.profiles;
+              const profile = row.profiles;
               if (!profile) return null;
               return (
-                <li key={profile.id} className="flex items-center gap-3 bg-slate-700/60 rounded-md p-3">
-                  {profile.avatar_url ? (
-                    <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover" />
-                  ) : (
-                    <span className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-medium">
-                      {profile.display_name?.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="text-white">{profile.display_name}</span>
+                <li key={profile.id}>
+                  <Link
+                    to={`/user/${type === 'followers' ? row.follower_id : row.following_id}/prompts`}
+                    className="flex items-center gap-3 bg-slate-700/60 rounded-md p-3 hover:bg-slate-600/60 transition-colors"
+                    onClick={onClose}
+                  >
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <span className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-medium">
+                        {profile.display_name?.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                    <span className="text-white truncate max-w-[140px]">{profile.display_name}</span>
+                  </Link>
                 </li>
               );
             })}

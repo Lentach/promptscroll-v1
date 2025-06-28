@@ -65,6 +65,11 @@ The platform currently lacks social interaction between users beyond voting on p
 - [ ] FS10 Docs & Readme update
 
 ## Executor's Feedback or Assistance Requests (Follow System)
-• Batch FS3–FS8 completed: RLS migration, types update, hooks (counts, status, toggle), components (FollowListModal, FollowButton), ProfileModal integration.
-• Pending: FS9 tests and FS10 docs. Let me know if you want to review UI or proceed to tests.
+• Added navigation from FollowListModal items to `/user/:id/prompts` and created `UserPromptsPage` with route.
+• AuthorCardModal now shows View Prompts link.
+• Avatar button in PromptCard opens AuthorCardModal, overnight overlay not blocked.
+• Ready for UI review then proceed to tests (FS9).
+
+• FollowButton improvements: cannot follow self, shows "Following" when active.
+• Avatar tooltip restored by removing pointer-events-none.
 

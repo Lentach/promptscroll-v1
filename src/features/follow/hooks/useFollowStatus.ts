@@ -9,13 +9,13 @@ export const useFollowStatus = (targetUserId?: string) => {
     enabled: !!user && !!targetUserId,
     queryFn: async () => {
       if (!user || !targetUserId) return false;
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('follows')
-        .select('follower_id', { head: true })
+        .select('*', { count: 'exact', head: true })
         .eq('follower_id', user.id)
         .eq('following_id', targetUserId);
       if (error) throw error;
-      return (data as unknown) === null ? false : true;
+      return (count ?? 0) > 0;
     },
     staleTime: 30000,
   });
