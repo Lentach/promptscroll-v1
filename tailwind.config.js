@@ -83,6 +83,7 @@ export default {
           800: '#1e40af',
           900: '#1e3a8a',
         },
+        'claude-gray': '#585654',
         // Enhanced dark theme colors
         dark: {
           50: '#f8fafc',
